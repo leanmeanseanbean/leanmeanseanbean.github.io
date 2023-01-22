@@ -1,0 +1,93 @@
+body {
+    background-color: lightblue;
+    text-align: center;
+}
+
+h1 {
+    text-transform: uppercase;
+}
+
+#timesheet {
+    display: flex;
+    flex-direction: column;
+}
+
+.timesheet {
+    flex: 1;
+    /* table-layout: fixed; */
+    font-family: Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+    word-wrap: break-word;
+}
+
+.timesheet th, .timesheet td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    min-width: 90px;
+}
+
+.timesheet tr:nth-child(even){background-color: #f2f2f2;}
+
+.timesheet tr:hover {background-color: #ddd;}
+
+.timesheet th {
+    flex: 0 1 content;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color: #0f628c;
+    color: white;
+    text-align: center;
+}
+
+.timesheet td {
+    flex: 0 1 content;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+
+.dayCol {
+    flex: 0 1 content;
+    /* width:60px; */
+}
+
+.timeCol {
+    flex: 0 1 content;
+    /* width: 90px; */
+}
+
+.allowanceCol {
+    flex: 0 1 content;
+    /* width: 90px; */
+}
+
+.timeInput {
+    width: 60px;
+    margin-right:1px;
+}
+
+.commentsCol {
+    flex: 0 1 content;
+    /* min-width: 100px; */
+}
+
+.sickButton {
+    width: 80px;
+    color: red;
+    font-weight: bold;
+}
+
+.calculatePay {
+    width: 150px;
+    height: 50px;
+    margin-top: 20px;
+    align-self: center;   
+}
+
+#payDetails {
+text-align: left;
+margin-left: 50rem;
+}
+
