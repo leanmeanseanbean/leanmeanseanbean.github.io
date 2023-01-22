@@ -430,13 +430,13 @@ calculatePay = (payRate, adoWeek, tableArray) => {
   if (adoWeek === "long") {
     payArray.push(rounded(adoAdjustment * -1));
     grossHours -= 4;
-    payDiv.innerText += ` Accrued Day Off - Adjustm:  4: ${rounded(
+    payDiv.innerText += ` \nAccrued Day Off - Adjustm:  4: ${rounded(
       adoAdjustment * -1
     )}   \n`;
   } else {
     payArray.push(rounded(adoAdjustment));
     grossHours += 4;
-    payDiv.innerText += ` Accrued Day Off - Adjustm:  4: ${rounded(
+    payDiv.innerText += ` \nAccrued Day Off - Adjustm:  4: ${rounded(
       adoAdjustment
     )}   \n`;
   }
