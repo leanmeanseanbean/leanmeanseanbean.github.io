@@ -7,7 +7,45 @@ h1 {
     text-transform: uppercase;
 }
 
+#container {
+display: flex;
+flex-direction: column;
+}
+
+.payfield {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+#payinput {
+    flex:0.25;
+    min-width: 345px;
+}
+
+.longshort {
+    display: flex;
+    flex:0.25;
+    width: 345px;
+    justify-content: center;
+}
+
+.longweek {
+    flex: 0.25;
+    min-width: 170px;
+}
+
+.shortweek {
+    flex: 0.25;
+    min-width: 170px;
+}
+
+
+
 #timesheet {
+    flex: 1;
     display: flex;
     flex-direction: column;
 }
@@ -86,8 +124,14 @@ h1 {
     align-self: center;   
 }
 
-#payDetails {
-text-align: left;
-margin-left: 50rem;
+.printpay {
+    flex: 1;
+    text-align: center;
 }
+
+#payDetails {
+    display:inline-block;
+text-align: left;
+}
+
 

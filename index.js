@@ -117,9 +117,14 @@ calculatePay = (payRate, adoWeek, tableArray) => {
       dailyMinutes += timeWorked[i][1][1];
       ordinaryHours += timeWorked[i][1][0];
       ordinaryMinutes += timeWorked[i][1][1];
+      //display time worked in the timesheet
       document.getElementsByClassName("displayHours")[
         i
       ].value = `${timeWorked[i][1][0]}:${timeWorked[i][1][1]}`;
+
+      // add the OT as extra minutes . ie. 30 mins OT ~ 15 mins pay @ 50%
+      // this is guarantee hours offset
+      // add offset to ordinary hours to determine guarantee payment
       if (timeWorked[i][4] !== "-") {
         dailyHours += timeWorked[i][4][0];
         dailyMinutes += timeWorked[i][4][1];
