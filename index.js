@@ -111,6 +111,15 @@ calculatePay = (payRate, adoWeek, tableArray) => {
 
   //CALCULATING DAILY HOURS
   for (let i = 0; i < timeWorked.length - 1; i++) {
+
+    //if shift starts after 0000 && finishes after start time && finishes before 2399
+      //OR
+      //if shift start time + timeworked110 < 2399
+      //then the shift starts and finishes on the same day
+
+      //change start time to units 
+
+
     if (timeWorked[i].length > 0) {
       //adding all the working time;
       payDiv.innerText += `\n${weekdays[i]}: \n`;
@@ -176,13 +185,6 @@ calculatePay = (payRate, adoWeek, tableArray) => {
       dailyMinutes = CheckDailyMinutes(dailyMinutes);
       ordinaryMinutes = CheckOrdinaryMinutes(ordinaryMinutes);
       ordinaryUnits += dailyUnits;
-
-      //if shift starts after 0000 && finishes after start time && finishes before 2399
-      //OR
-      //if shift start time + timeworked110 < 2399
-      //then the shift starts and finishes on the same day
-
-      //change start time to units 
 
       //excess shifts: overtime 150 on weekdays and 200 on weekends
       if (daysWorkedCounter > ordinaryDays) {
@@ -415,14 +417,12 @@ calculatePay = (payRate, adoWeek, tableArray) => {
         }
       }
 
-      //add security if ticked
-      //single unit per shift
+      //add security if ticked - single unit per shift
       if (tableArray[i][4]) {
         dailyPayArray.push(securityAllowance);
         payDiv.innerText += ` Guards Security Allow:  1: ${securityAllowance}   \n`;
       }
-      //add cab if ticked
-      //single unit per shift
+      //add cab if ticked - single unit per shift
       if (tableArray[i][5]) {
         dailyPayArray.push(cabEtrAllowance);
         payDiv.innerText += ` Elec Guards Spl Shift All:  1: ${cabEtrAllowance}   \n`;
@@ -442,6 +442,8 @@ calculatePay = (payRate, adoWeek, tableArray) => {
         );
         payDiv.innerText += ` Public Holiday Accrued  \n`;
       }
+
+      //print working time and running total
       console.log(
         daysWorkedCounter +
           `: ` +
@@ -458,6 +460,7 @@ calculatePay = (payRate, adoWeek, tableArray) => {
           ordinaryUnits
       );
 
+      //reset daily counters
       dailyHours = 0;
       dailyMinutes = 0;
       dailyUnits = 0;
@@ -490,11 +493,19 @@ calculatePay = (payRate, adoWeek, tableArray) => {
   if(daysWorkedCounter >= ordinaryDays){
     //convert ordinary hours and ordinary minutes into units
     console.log(`ordinary hours at the end of `+ ordinaryDays + `days: ` + AsUnits(ordinaryHours*60 + ordinaryMinutes));
+    console.log(`base hours for a ` + adoWeek + ` are ` + ordinaryHours);
+    if(AsUnits(ordinaryHours*60 + ordinaryMinutes) >= ordinaryHours) {
+      console.log(`there is no guarantee payment.`);
+    }
+    if(AsUnits(ordinaryHours*60 + ordinaryMinutes) < ordinaryHours ) {
+      console.log(`there is a guarantee payment for ` + (ordinaryHours - AsUnits(ordinaryHours*60 + ordinaryMinutes)) + ` hours`);
+    }
     //base hours - ordinary hours and minutes
     // shortfall????
   }
 
   console.log(payArray);
+
   for (let i = 0; i < payArray.length; i++) {
     for (let j = 0; j < payArray[i].length; j++) {
       GrossPay += payArray[i][j];
@@ -526,14 +537,8 @@ calculatePay = (payRate, adoWeek, tableArray) => {
   }
 };
 
-
-
 function rounded(pay) {
   return Math.round((pay + Number.EPSILON) * 100) / 100;
-}
-
-function minAsUnits(minutes) {
-  return Math.round((minutes / 60) * 100);
 }
 
 function AsUnits(minutes) {
