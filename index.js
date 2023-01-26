@@ -20,10 +20,6 @@ storeData = () => {
       rowArray = [];
       continue;
     }
-    //if sick value, skip for now
-    if (table[i].value === "SICK") {
-      continue;
-    }
     //if checkbox, see if its checked or not
     if (table[i].getAttribute("type") === "checkbox") {
       rowArray.push(table[i].checked);
@@ -92,12 +88,10 @@ calculatePay = (payRate, adoWeek, tableArray) => {
   var payDiv = document.getElementById("payDetails");
   //empty any existing text
   payDiv.innerText = "";
-for (let i = 0; i < 14; i++) {
-  document.getElementsByClassName("displayHours")[
-    i
-  ].value = ``;
-}
-  
+  for (let i = 0; i < 14; i++) {
+    document.getElementsByClassName("displayHours")[i].value = ``;
+  }
+
   //calculate hours and minutes worked
   timeWorked = calculateTimeWorked(tableArray);
   timeAsUnits = calculateTimeWorkedAsUnits(tableArray);
@@ -177,8 +171,12 @@ for (let i = 0; i < 14; i++) {
       ordinaryMinutes = CheckOrdinaryMinutes(ordinaryMinutes);
       ordinaryUnits += dailyUnits;
 
-      if(timeAsUnits[i][1] + dailyUnits > 24){
-        console.log(weekdays[i] + ` shift has passed midnight to finish on ` + weekdays[i+1]);
+      if (timeAsUnits[i][1] + dailyUnits > 24) {
+        console.log(
+          weekdays[i] +
+            ` shift has passed midnight to finish on ` +
+            weekdays[i + 1]
+        );
       }
 
       //excess shifts: overtime 150 on weekdays and 200 on weekends
@@ -340,61 +338,9 @@ for (let i = 0; i < 14; i++) {
         //NEED TO REFACTOR TO ROUND UP OR DOWN THE MINUTES FOR AN EXTRA UNIT OF PAY
         // saturday loading
         if (weekdays[i] === "Saturday" && !tableArray[i][7]) {
-          dailyPayArray.push(
-            rounded(
-              RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
-                payRate *
-                satLoading
-            )
-          );
-          payDiv.innerText += ` Loading @ 50% Saturday:  ${RoundedUnits(
-            timeWorked[i][1][0] * 60 + timeWorked[i][1][1]
-          )}: ${rounded(
-            RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
-              payRate *
-              satLoading
-          )}   \n`;
-          // add minutes rounded up or down
-        }
-        // sunday loading
-        if (weekdays[i] === "Sunday" && !tableArray[i][7]) {
-          dailyPayArray.push(
-            rounded(
-              RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
-                payRate *
-                sunLoading
-            )
-          );
-          payDiv.innerText += ` Loading @ 100% Sunday:  ${RoundedUnits(
-            timeWorked[i][1][0] * 60 + timeWorked[i][1][1]
-          )}: ${rounded(
-            RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
-              payRate *
-              sunLoading
-          )}   \n`;
-          // add minutes rounded up or down
-        }
-        // public holiday loading
-        if (tableArray[i][7]) {
-          // weekend PH is 100%
-          if (weekdays[i] === "Sunday" || weekdays[i] === "Saturday") {
-            dailyPayArray.push(
-              rounded(
-                RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
-                  payRate *
-                  sunLoading
-              )
-            );
-            payDiv.innerText += ` PH Loading @ 100%:  ${RoundedUnits(
-              timeWorked[i][1][0] * 60 + timeWorked[i][1][1]
-            )}: ${rounded(
-              RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
-                payRate *
-                sunLoading
-            )}   \n`;
-            // add minutes rounded up or down
-          } else {
-            // weekday PH is 50%
+          if (
+            RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) < 8
+          ) {
             dailyPayArray.push(
               rounded(
                 RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
@@ -402,14 +348,98 @@ for (let i = 0; i < 14; i++) {
                   satLoading
               )
             );
-            payDiv.innerText += ` PH Loading @ 50%:  ${RoundedUnits(
+            payDiv.innerText += ` Loading @ 50% Saturday:  ${RoundedUnits(
               timeWorked[i][1][0] * 60 + timeWorked[i][1][1]
             )}: ${rounded(
               RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
                 payRate *
                 satLoading
             )}   \n`;
-            // add minutes rounded up or down
+          } else {
+            dailyPayArray.push(shiftLength * payRate * satLoading);
+            payDiv.innerText += ` Loading @ 50% Saturday:  ${shiftLength}: ${
+              shiftLength * payRate * satLoading
+            }   \n`;
+          }
+        }
+        // sunday loading
+        if (weekdays[i] === "Sunday" && !tableArray[i][7]) {
+          if (
+            RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) < 8
+          ) {
+            dailyPayArray.push(
+              rounded(
+                RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
+                  payRate *
+                  sunLoading
+              )
+            );
+            payDiv.innerText += ` Loading @ 100% Sunday:  ${RoundedUnits(
+              timeWorked[i][1][0] * 60 + timeWorked[i][1][1]
+            )}: ${rounded(
+              RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
+                payRate *
+                sunLoading
+            )}   \n`;
+          } else {
+            dailyPayArray.push(shiftLength * payRate * sunLoading);
+            payDiv.innerText += ` Loading @ 100% Sunday:  ${shiftLength}: ${
+              shiftLength * payRate * sunLoading
+            }   \n`;
+          }
+        }
+        // public holiday loading
+        if (tableArray[i][7]) {
+          // weekend PH is 100%
+          if (weekdays[i] === "Sunday" || weekdays[i] === "Saturday") {
+            if (
+              RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) < 8
+            ) {
+              dailyPayArray.push(
+                rounded(
+                  RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
+                    payRate *
+                    sunLoading
+                )
+              );
+              payDiv.innerText += ` PH Loading @ 100%:  ${RoundedUnits(
+                timeWorked[i][1][0] * 60 + timeWorked[i][1][1]
+              )}: ${rounded(
+                RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
+                  payRate *
+                  sunLoading
+              )}   \n`;
+            } else {
+              dailyPayArray.push(shiftLength * payRate * sunLoading);
+              payDiv.innerText += ` PH Loading @ 100%:  ${shiftLength}: ${
+                shiftLength * payRate * sunLoading
+              }   \n`;
+            }
+          } else {
+            if (
+              RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) < 8
+            ) {
+              // weekday PH is 50%
+              dailyPayArray.push(
+                rounded(
+                  RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
+                    payRate *
+                    satLoading
+                )
+              );
+              payDiv.innerText += ` PH Loading @ 50%:  ${RoundedUnits(
+                timeWorked[i][1][0] * 60 + timeWorked[i][1][1]
+              )}: ${rounded(
+                RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
+                  payRate *
+                  satLoading
+              )}   \n`;
+            } else {
+              dailyPayArray.push(shiftLength * payRate * satLoading);
+              payDiv.innerText += ` PH Loading @ 50%:  ${shiftLength}: ${
+                shiftLength * payRate * satLoading
+              }   \n`;
+            }
           }
         }
         //SHIFT ALLOWANCE PENALTIES - ONLY ON WEEKDAYS
@@ -420,47 +450,74 @@ for (let i = 0; i < 14; i++) {
         ) {
           if (tableArray[i][1] >= 400 && tableArray[i][1] <= 530) {
             console.log("its morning shift!");
-            dailyPayArray.push(
-              rounded(
+            if (
+              RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) >= 8
+            ) {
+              dailyPayArray.push(shiftLength * EarlyMorningShiftPenalty);
+              payDiv.innerText += ` Morning Shift Dvrs/Grds Hrl:  ${shiftLength}: ${
+                shiftLength * EarlyMorningShiftPenalty
+              }   \n`;
+            } else {
+              dailyPayArray.push(
+                rounded(
+                  RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
+                    EarlyMorningShiftPenalty
+                )
+              );
+              payDiv.innerText += ` Morning Shift Dvrs/Grds Hrl:  ${RoundedUnits(
+                timeWorked[i][1][0] * 60 + timeWorked[i][1][1]
+              )}: ${rounded(
                 RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
                   EarlyMorningShiftPenalty
-              )
-            );
-            payDiv.innerText += ` Morning Shift Dvrs/Grds Hrl:  ${RoundedUnits(
-              timeWorked[i][1][0] * 60 + timeWorked[i][1][1]
-            )}: ${rounded(
-              RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
-                EarlyMorningShiftPenalty
-            )}   \n`;
+              )}   \n`;
+            }
           }
           if (tableArray[i][1] < 1800 && tableArray[i][3] > 1800) {
             console.log("its arvo shift!");
-            dailyPayArray.push(
-              rounded(
+            if (
+              RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) >= 8
+            ) {
+              dailyPayArray.push(shiftLength * AfternoonShiftPenalty);
+              payDiv.innerText += ` Afternoon Shift Dvrs/Grds Hrl:  ${shiftLength}: ${
+                shiftLength * AfternoonShiftPenalty
+              }   \n`;
+            } else {
+              dailyPayArray.push(
+                rounded(
+                  RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
+                    AfternoonShiftPenalty
+                )
+              );
+              payDiv.innerText += ` Afternoon Shift Dvrs/Grds Hrl:  ${RoundedUnits(
+                timeWorked[i][1][0] * 60 + timeWorked[i][1][1]
+              )}: ${rounded(
                 RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
                   AfternoonShiftPenalty
-              )
-            );
-            payDiv.innerText += ` Afternoon Shift Dvrs/Grds Hrl:  ${RoundedUnits(
-              timeWorked[i][1][0] * 60 + timeWorked[i][1][1]
-            )}: ${rounded(
-              RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
-                AfternoonShiftPenalty
-            )}   \n`;
+              )}   \n`;
+            }
           }
           if (tableArray[i][1] <= 359 || tableArray[i][1] >= 1800) {
-            dailyPayArray.push(
-              rounded(
+            if (
+              RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) >= 8
+            ) {
+              dailyPayArray.push(
+                rounded(
+                  RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
+                    nightShiftPenalty
+                )
+              );
+              payDiv.innerText += ` Night Shift Dvrs/Grds Hrl:  ${RoundedUnits(
+                timeWorked[i][1][0] * 60 + timeWorked[i][1][1]
+              )}: ${rounded(
                 RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
                   nightShiftPenalty
-              )
-            );
-            payDiv.innerText += ` Night Shift Dvrs/Grds Hrl:  ${RoundedUnits(
-              timeWorked[i][1][0] * 60 + timeWorked[i][1][1]
-            )}: ${rounded(
-              RoundedUnits(timeWorked[i][1][0] * 60 + timeWorked[i][1][1]) *
-                nightShiftPenalty
-            )}   \n`;
+              )}   \n`;
+            } else {
+              dailyPayArray.push(shiftLength * nightShiftPenalty);
+              payDiv.innerText += ` Night Shift Dvrs/Grds Hrl:  ${shiftLength}: ${
+                shiftLength * nightShiftPenalty
+              }   \n`;
+            }
           }
           //SPECIAL SHIFT LOADING ONE UNIT PER SHIFT
           if (
@@ -749,6 +806,10 @@ calculateTimeWorkedAsUnits = (tableArray) => {
   const timeAsUnits = [];
   //format of timeWorked = Rostered hours, actual hours, lift up [IF ANY, else 0], layback [IF ANY, else 0], buildup [IF ANY, else 0]
   var rowTime = [];
+  var startTimeInUnits = 0;
+  var startTimeRosteredInUnits = 0;
+  var finishTimeInUnits = 0;
+  var finishTimeRosteredInUnits = 0;
   const weekdays = [
     `Sunday`,
     `Monday`,
@@ -777,67 +838,97 @@ calculateTimeWorkedAsUnits = (tableArray) => {
       let startTimeRostered = row[0].match(/.{2}/g);
       let startTimeRosteredInMinutes =
         parseInt(startTimeRostered[0]) * 60 + parseInt(startTimeRostered[1]);
-        let startTimeRosteredInUnits = rounded(startTimeRosteredInMinutes/60);
-        x.push(startTimeRosteredInUnits);
+      startTimeRosteredInUnits = rounded(startTimeRosteredInMinutes / 60);
+      x.push(startTimeRosteredInUnits);
 
+      if (row[1].toUpperCase() === "SICK") {
+        x.push("Sick");
+      } else {
         //start time actual as units
-      let startTime = row[1].match(/.{2}/g);
-      let startTimeInMinutes =
-        parseInt(startTime[0]) * 60 + parseInt(startTime[1]);
-        let startTimeInUnits = rounded(startTimeInMinutes/60);
+        let startTime = row[1].match(/.{2}/g);
+        let startTimeInMinutes =
+          parseInt(startTime[0]) * 60 + parseInt(startTime[1]);
+        startTimeInUnits = rounded(startTimeInMinutes / 60);
         x.push(startTimeInUnits);
+      }
 
-        // finish time rostered as units
+      // finish time rostered as units
       let finishTimeRostered = row[2].match(/.{2}/g);
       let finishTimeRosteredInMinutes =
         parseInt(finishTimeRostered[0]) * 60 + parseInt(finishTimeRostered[1]);
-        let finishTimeRosteredInUnits = rounded(finishTimeRosteredInMinutes/60)
-        x.push(finishTimeRosteredInUnits);
+      finishTimeRosteredInUnits = rounded(finishTimeRosteredInMinutes / 60);
+      x.push(finishTimeRosteredInUnits);
 
-      //finish time actual as units
-      let finishTime = row[3].match(/.{2}/g);
-      let finishTimeInMinutes =
-        parseInt(finishTime[0]) * 60 + parseInt(finishTime[1]);
-        let finishTimeInUnits = rounded(finishTimeInMinutes/60);
+      if(row[3] !== null) {
+        //finish time actual as units
+        let finishTime = row[3].match(/.{2}/g);
+        let finishTimeInMinutes =
+          parseInt(finishTime[0]) * 60 + parseInt(finishTime[1]);
+        finishTimeInUnits = rounded(finishTimeInMinutes / 60);
         x.push(finishTimeInUnits);
-
-        //actual time worked as units
-        x.push(finishTimeInUnits - startTimeInUnits);
-
-        //LU
-        if(startTimeInUnits < startTimeRosteredInUnits){
-          x.push(finishTimeRosteredInUnits - finishTimeInUnits);
-        }
-        else{
-          x.push(`no lift up`);
-        }
-        //LB
-        if(startTimeInUnits > startTimeRosteredInUnits && finishTimeInUnits >= finishTimeRosteredInUnits + (startTimeInUnits - startTimeRosteredInUnits)){
-          x.push(startTimeInUnits - startTimeRosteredInUnits)
-        }else{
-          x.push(`no layback`);
-        }
-        //BU
-        let bu = (startTimeInUnits - startTimeRosteredInUnits) + (finishTimeRosteredInUnits - finishTimeInUnits);
-        if(startTimeInUnits >= startTimeRosteredInUnits && finishTimeInUnits < finishTimeRosteredInUnits || startTimeInUnits > startTimeRosteredInUnits && finishTimeInUnits <= finishTimeRosteredInUnits){
-          x.push(bu);
-        }
-        else{
-          x.push(`no buildup`);
-        }
+      }
       
-        // start day
-      x.push(weekdays[index]);
+      //actual time worked as units
+      var workedUnits;
+      if (finishTimeInUnits < startTimeInUnits) {
+        workedUnits = 24 - startTimeInUnits + finishTimeInUnits;
+        x.push(workedUnits);
+      } else {
+        workedUnits = finishTimeInUnits - startTimeInUnits;
+        x.push(workedUnits);
+      }
+
+      // start day
+      if (finishTimeInUnits < startTimeInUnits) {
+        x.push([workedUnits - finishTimeInUnits, weekdays[index]]);
+        // x.push(weekdays[index]);
+      } else {
+        x.push([workedUnits, weekdays[index]]);
+        // x.push(weekdays[index]);
+      }
 
       // finish day
-      if(startTimeRosteredInUnits > finishTimeRosteredInUnits){
-        x.push(weekdays[index+1]);
-      }
-      else{
-        x.push(weekdays[index]);
+      if (startTimeRosteredInUnits > finishTimeRosteredInUnits) {
+        x.push([startTimeInUnits + workedUnits - 24, weekdays[index + 1]]);
+        // x.push(weekdays[index + 1]);
+      } else {
+        x.push(`entire shift on ` + weekdays[index]);
       }
 
       // DO WE CALCULATE HOW MANY HOURS IS IN ONE DAY AND HOW MANY HOURS ARE IN THE NEXT DAY?
+
+      //LU
+      if (startTimeInUnits < startTimeRosteredInUnits) {
+        x.push(finishTimeRosteredInUnits - finishTimeInUnits);
+      } else {
+        x.push(`no lift up`);
+      }
+      //LB
+      if (
+        startTimeInUnits > startTimeRosteredInUnits &&
+        finishTimeInUnits >=
+          finishTimeRosteredInUnits +
+            (startTimeInUnits - startTimeRosteredInUnits)
+      ) {
+        x.push(startTimeInUnits - startTimeRosteredInUnits);
+      } else {
+        x.push(`no layback`);
+      }
+      //BU
+      let bu =
+        startTimeInUnits -
+        startTimeRosteredInUnits +
+        (finishTimeRosteredInUnits - finishTimeInUnits);
+      if (
+        (startTimeInUnits >= startTimeRosteredInUnits &&
+          finishTimeInUnits < finishTimeRosteredInUnits) ||
+        (startTimeInUnits > startTimeRosteredInUnits &&
+          finishTimeInUnits <= finishTimeRosteredInUnits)
+      ) {
+        x.push(bu);
+      } else {
+        x.push(`no buildup`);
+      }
 
       timeAsUnits.push(x);
     }
