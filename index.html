@@ -15,18 +15,26 @@
     </p>
     <div id="container">
       <div class="payfield">
+        <div class="longshort">
+          <div class="longweek">
+            <label for="driver"> &emsp;&emsp;Driver</label>
+            <input type="radio" id="driver" name="driverorguard" value="Driver" />
+          </div>
+          <div class="shortweek">
+            <label for="short">Guard</label>
+            <input type="radio" id="guard" name="driverorguard" value="Guard" />
+          </div>
+        </div>
         <div id="payinput">
           <label for="payRate">Pay Rate </label>
           <input type="text" id="payRate" name="payRate" />
         </div>
         <div class="longshort">
           <div class="longweek">
-
             <label for="long"> &emsp;&emsp;Long Fortnight</label>
             <input type="radio" id="long" name="longorshort" value="long" />
           </div>
           <div class="shortweek">
-
             <label for="short">short Fortnight</label>
             <input type="radio" id="short" name="longorshort" value="short" />
           </div>
