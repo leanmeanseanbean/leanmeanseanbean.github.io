@@ -23,6 +23,8 @@ flex-direction: column;
 #payinput {
     flex:0.25;
     min-width: 345px;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 
 .longshort {
@@ -30,17 +32,39 @@ flex-direction: column;
     flex:0.25;
     width: 345px;
     justify-content: center;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 
 .longweek {
     flex: 0.25;
-    min-width: 170px;
+    min-width: 160px;
 }
 
 .shortweek {
     flex: 0.25;
-    min-width: 170px;
+    min-width: 160px;
 }
+
+.driverguard {
+    display: flex;
+    flex:0.20;
+    width: 300px;
+    justify-content: center;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.driverdiv {
+    flex: 0.20;
+    min-width: 120px;
+}
+
+.guarddiv {
+    flex: 0.2;
+    min-width: 120px;
+}
+
 
 
 

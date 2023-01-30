@@ -10,17 +10,20 @@
   <body>
     <h1>Pay Calculator</h1>
     <p>
-      All fields need to be filled out. If you did not work a day, leave it
-      blank.
+      All rostered start times and rostered finish times MUST be filled out for days rostered on. <br> 
+      If you did not work a day, leave the fields blank. <br>
+      If you were sick, write 'sick' in the Actual sign on time. <br>
+      Mark the PH box if that day is a public holiday, even if you arent working. <br>
+      If you have a HOL - public holiday not required - then write 'HOL' in any of the sign on boxes.
     </p>
     <div id="container">
       <div class="payfield">
-        <div class="longshort">
-          <div class="longweek">
+        <div class="driverguard">
+          <div class="driverdiv">
             <label for="driver"> &emsp;&emsp;Driver</label>
             <input type="radio" id="driver" name="driverorguard" value="Driver" />
           </div>
-          <div class="shortweek">
+          <div class="guarddiv">
             <label for="short">Guard</label>
             <input type="radio" id="guard" name="driverorguard" value="Guard" />
           </div>
