@@ -119,8 +119,12 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
   var offsetUnits = 0;
   //displaying information to user
   var payDiv = document.getElementById("payDetails");
+  var unitDiv = document.getElementById("unitDetails");
+  var amountDiv = document.getElementById("amountDetails");
   //empty any existing text
   payDiv.innerText = "";
+  unitDiv.innerText = ``;
+  amountDiv.innerText = ``;
   for (let i = 0; i < 14; i++) {
     document.getElementsByClassName("displayHours")[i].value = ``;
   }
@@ -168,13 +172,17 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
   // seperate calculations based on timeWorkedAsUnits starting and finishing days
 
   // CHECK EXTRA KM's AND EFFECT ON PH's.
-
+  payDiv.innerText += ` \n Details \n`;
+  unitDiv.innerText += ` \nUnits\n`;
+  amountDiv.innerText += ` \nAmounts\n`;
   //CALCULATING DAILY HOURS
   for (let i = 0; i < timeAsUnits.length; i++) {
     // IF ITS NOT A DAY OFF
     if (timeAsUnits[i].length > 0) {
       //adding all the working time;
-      payDiv.innerText += `\n${weekdays[i]}: \n`;
+      payDiv.innerText += ` \n${weekdays[i]}: \n`;
+      unitDiv.innerText += ` \n\n`;
+      amountDiv.innerText += ` \n\n`;
 
       if (timeAsUnits[i] !== "Hol") {
         dailyPayArray = [];
@@ -185,6 +193,9 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
         cab = tableArray[i][5];
         overtime = tableArray[i][9];
         callOut = tableArray[i][10];
+        if (timeAsUnits[i][1] === "Sick") {
+          dailyUnits = timeAsUnits[i][4];
+        }
         if (timeAsUnits[i][10] === "No milage") {
           dailyUnits = timeAsUnits[i][4];
           if (daysWorkedCounter <= ordinaryDays) {
@@ -192,7 +203,10 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
             console.log("normal hours: " + ordinaryUnits + " - " + dailyUnits);
           }
         }
-        if (timeAsUnits[i][10] !== "No milage") {
+        if (
+          timeAsUnits[i][10] !== "No milage" &&
+          timeAsUnits[i][1] !== "Sick"
+        ) {
           dailyUnits = timeAsUnits[i][4];
           milageUnits = timeAsUnits[i][10][1];
           milageBU = timeAsUnits[i][10][2];
@@ -296,29 +310,27 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                       weekdayOT
                   )
                 );
-                payDiv.innerText += ` Overtime @ 150%:  ${rounded(
+
+                payDiv.innerText += ` Overtime @ 150%: ........................................................................................ \n`;
+                unitDiv.innerText += ` ${rounded(
                   dailyUnits + BU + LU + LB + extraKmAsUnits
-                )}: ${rounded(
+                )}: ........................................................................................................................\n`;
+                amountDiv.innerText += ` ${rounded(
                   (dailyUnits + BU + LU + LB + extraKmAsUnits) *
                     payRate *
                     weekdayOT
-                )}   \n`;
+                )}\n`;
               }
               if (dailyUnits + BU + LU + LB + extraKmAsUnits > 11) {
                 //up to 11 hours is 150%
-                dailyPayArray.push(
-                  rounded(
-                    11 *
-                      payRate *
-                      weekdayOT
-                  )
-                );
-                payDiv.innerText += ` Overtime @ 150%:  ${rounded(
+                dailyPayArray.push(rounded(11 * payRate * weekdayOT));
+
+                payDiv.innerText += ` Overtime @ 150%: ................................................................................................  \n`;
+                unitDiv.innerText += ` ${rounded(
                   11
-                )}: ${rounded(
-                  11 *
-                    payRate *
-                    weekdayOT
+                )}: ...................................................................................................................................... \n`;
+                amountDiv.innerText += ` ${rounded(
+                  11 * payRate * weekdayOT
                 )}   \n`;
                 // over 11 hours is 200%
                 dailyPayArray.push(
@@ -328,9 +340,12 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                       weekendOT
                   )
                 );
-                payDiv.innerText += ` Overtime @ 200%:  ${rounded(
-                  (dailyUnits + BU + LU + LB + extraKmAsUnits - 11)
-                )}: ${rounded(
+
+                payDiv.innerText += ` Overtime @ 200%: .................................................................................................  \n`;
+                unitDiv.innerText += ` ${rounded(
+                  dailyUnits + BU + LU + LB + extraKmAsUnits - 11
+                )}: ...................................................................................................................................... \n`;
+                amountDiv.innerText += `  ${rounded(
                   (dailyUnits + BU + LU + LB + extraKmAsUnits - 11) *
                     payRate *
                     weekdayOT
@@ -346,11 +361,16 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                     weekendOT
                 )
               );
-              payDiv.innerText += ` Overtime @ 200%:  ${rounded(
+
+              payDiv.innerText += ` Overtime @ 200%: .................................................................................................  \n`;
+              unitDiv.innerText += ` ${rounded(
+                dailyUnits + BU + LU + LB + extraKmAsUnits
+              )}: ...................................................................................................................................... \n`;
+              amountDiv.innerText += `${rounded(
                 (dailyUnits + BU + LU + LB + extraKmAsUnits) *
                   payRate *
                   weekendOT
-              )}   \n`;
+              )}  \n`;
             }
             // public holiday loading 50% - applicable on weekdays only
             if (publicHoliday && weekdays[i] !== "Saturday") {
@@ -358,11 +378,13 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
               dailyPayArray.push(
                 rounded(Math.round(dailyUnits) * payRate * satLoading)
               );
-              payDiv.innerText += ` PH Loading @ 50%:  ${Math.round(
+              payDiv.innerText += ` PH Loading @ 50%: ...............................................................................................................  \n`;
+              unitDiv.innerText += ` ${Math.round(
                 dailyUnits
-              )}: ${rounded(
+              )}: ........................................................................................................................ \n`;
+              amountDiv.innerText += `${rounded(
                 Math.round(dailyUnits) * payRate * satLoading
-              )}   \n`;
+              )}  \n`;
             }
           }
           //if its 3rd excess day or more, or weekend, its 200%
@@ -374,19 +396,21 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                   weekendOT
               )
             );
-            payDiv.innerText += ` Overtime @ 200%:  ${rounded(
+            payDiv.innerText += ` Overtime @ 200%: .................................................................................................  \n`;
+            unitDiv.innerText += `  ${rounded(
               dailyUnits + BU + LU + LB + milageBU
-            )}: ${rounded(
+            )}: ...................................................................................................................................... \n`;
+            amountDiv.innerText += `${rounded(
               (dailyUnits + BU + LU + LB + extraKmAsUnits) * payRate * weekendOT
-            )}   \n`;
+            )}  \n`;
           }
           if (milageBU > 0) {
             dailyPayArray.push(rounded(milageBU * payRate));
-            payDiv.innerText += `209km passed at ${
-              tableArray[i][6]
-            } - Buildup: ${rounded(milageBU)}: ${rounded(
-              milageBU * payRate
-            )}   \n`;
+            payDiv.innerText += `209km passed at ${tableArray[i][6]} - Buildup: ...............................................................................................................  \n`;
+            unitDiv.innerText += `  ${rounded(
+              milageBU
+            )}: .................................................................................................................................................... \n`;
+            amountDiv.innerText += `${rounded(milageBU * payRate)}   \n`;
           }
         }
         //calculating first 9/10 days ordinary hours
@@ -398,9 +422,9 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
               //add 8 hours to normal pay
               dailyPayArray.push(rounded(shiftLength * payRate));
               //print the details
-              payDiv.innerText += ` Ordinary Hours:  ${shiftLength}: ${rounded(
-                shiftLength * payRate
-              )}   \n`;
+              payDiv.innerText += ` Ordinary Hours: ....................................................................................................\n`;
+              unitDiv.innerText += ` ${shiftLength}: ...........................................................................................................................\n`;
+              amountDiv.innerText += ` ${rounded(shiftLength * payRate)}  \n`;
               //anything worked over 8 is scheduled OT,
               //weekend or PH is 200%
               if (
@@ -432,13 +456,15 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                 }
 
                 //print the details
-                payDiv.innerText += ` Sched OT 200%:  ${rounded(
+                payDiv.innerText += ` Sched OT 200%: ............................................................................................ \n`;
+                unitDiv.innerText += ` ${rounded(
                   dailyUnits + BU + LU + LB + extraKmAsUnits - shiftLength
-                )}: ${rounded(
+                )}: ...........................................................................................................................................\n`;
+                amountDiv.innerText += ` ${rounded(
                   (dailyUnits + BU + LU + LB + extraKmAsUnits - shiftLength) *
                     payRate *
                     weekendOT
-                )}   \n`;
+                )}  \n`;
               } //weekday is 150%;
               else {
                 dailyPayArray.push(
@@ -470,24 +496,26 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                       )
                   );
                 }
-
                 //print the details
-                payDiv.innerText += ` Sched OT 150%:  ${rounded(
+                payDiv.innerText += ` Sched OT 150%: ............................................................................................ \n`;
+                unitDiv.innerText += ` ${rounded(
                   dailyUnits + BU + LU + LB + extraKmAsUnits - shiftLength
-                )}: ${rounded(
+                )}: .............................................................................................................................\n`;
+                amountDiv.innerText += `${rounded(
                   (dailyUnits + BU + LU + LB + extraKmAsUnits - shiftLength) *
                     payRate *
                     weekdayOT
-                )}   \n`;
-
+                )} \n`;
                 // call out?
                 if (callOut) {
                   dailyPayArray.push(
                     rounded(shiftLength * payRate * callOutPenalty)
                   );
-                  payDiv.innerText += ` Callout @ 25%:  ${shiftLength}: ${rounded(
+                  payDiv.innerText += ` Callout @ 25%: ............................................................................................ \n`;
+                  unitDiv.innerText += ` ${shiftLength}: .............................................................................................................................\n`;
+                  amountDiv.innerText += `${rounded(
                     shiftLength * payRate * callOutPenalty
-                  )}   \n`;
+                  )} \n`;
                 }
               }
             } // if shift is 8 hours or under calculate normal pay
@@ -496,11 +524,13 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                 rounded((dailyUnits + BU + LU + LB + extraKmAsUnits) * payRate)
               );
               //print the details
-              payDiv.innerText += ` Ordinary Hours:  ${rounded(
+              payDiv.innerText += ` Ordinary Hours: ................................................................................................\n`;
+              unitDiv.innerText += `${rounded(
                 dailyUnits + BU + LU + LB + extraKmAsUnits
-              )}: ${rounded(
+              )}: ................................................................................................................................................. \n`;
+              amountDiv.innerText += ` ${rounded(
                 (dailyUnits + BU + LU + LB + extraKmAsUnits) * payRate
-              )}   \n`;
+              )}  \n`;
 
               if (callOut && weekdays !== "Saturday" && weekdays !== "Sunday") {
                 dailyPayArray.push(
@@ -510,13 +540,16 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                       callOutPenalty
                   )
                 );
-                payDiv.innerText += ` Callout @ 25%:  ${rounded(
+
+                payDiv.innerText += ` Callout @ 25%: ................................................................................................\n`;
+                unitDiv.innerText += ` ${rounded(
                   dailyUnits + BU + LU + LB + extraKmAsUnits
-                )}: ${rounded(
+                )}: ................................................................................................................................................. \n`;
+                amountDiv.innerText += `${rounded(
                   (dailyUnits + BU + LU + LB + extraKmAsUnits) *
                     payRate *
                     callOutPenalty
-                )}   \n`;
+                )}  \n`;
               }
             }
           }
@@ -536,13 +569,14 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                 dailyPayArray.push(
                   rounded(milageOTUnits * payRate * weekdayOT)
                 );
-
-                payDiv.innerText += ` Ordinary Hours:  ${shiftLength}: ${rounded(
-                  shiftLength * payRate
-                )}   \n`;
-                payDiv.innerText += ` Milage payment 209k's:  ${milageOTUnits}: ${rounded(
+                payDiv.innerText += ` Ordinary Hours: ............................................................................................\n`;
+                unitDiv.innerText += ` ${shiftLength}: ................................................................................................................................... \n`;
+                amountDiv.innerText += ` ${rounded(shiftLength * payRate)} \n`;
+                payDiv.innerText += `  Milage payment 209k's:  ..................................................................................\n`;
+                unitDiv.innerText += `  ${milageOTUnits}: ................................................................................................................................... \n`;
+                amountDiv.innerText += ` ${rounded(
                   milageOTUnits * payRate * weekdayOT
-                )}   \n`;
+                )}  \n`;
                 //excess is 150% on weekdays eg - 30" + any LU LB BU etc
                 if (BU + LU + LB + extraKmAsUnits > 0) {
                   dailyPayArray.push(
@@ -550,9 +584,11 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                       (BU + LU + LB + extraKmAsUnits) * payRate * weekdayOT
                     )
                   );
-                  payDiv.innerText += ` Sched OT 150%:  ${rounded(
+                  payDiv.innerText += `  Sched OT 150%:   ..................................................................................\n`;
+                  unitDiv.innerText += `   ${rounded(
                     BU + LU + LB + extraKmAsUnits
-                  )}: ${rounded(
+                  )}: ................................................................................................................................... \n`;
+                  amountDiv.innerText += `${rounded(
                     (BU + LU + LB + extraKmAsUnits) * payRate * weekdayOT
                   )}   \n`;
                 }
@@ -571,12 +607,15 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                   rounded(milageOTUnits * payRate * weekdayOT)
                 );
                 // ADD A LOADING FOR SATURDAY OR PUBLIC HOLIDAY
-                payDiv.innerText += ` Ordinary Hours:  ${shiftLength}: ${rounded(
-                  shiftLength * payRate
-                )}   \n`;
-                payDiv.innerText += ` Milage payment 209k's:  ${milageOTUnits}: ${rounded(
+                payDiv.innerText += `Ordinary Hours:  ..................................................................................\n`;
+                unitDiv.innerText += `  ${shiftLength}: ................................................................................................................................... \n`;
+                amountDiv.innerText += ` ${rounded(shiftLength * payRate)}\n`;
+                payDiv.innerText += ` Milage payment 209k's: ..................................................................................\n`;
+                unitDiv.innerText += ` ${milageOTUnits}: ................................................................................................................................... \n`;
+                amountDiv.innerText += `${rounded(
                   milageOTUnits * payRate * weekdayOT
-                )}   \n`;
+                )}\n`;
+
                 // excess over 8 hours is 200%
                 if (BU + LU + LB + extraKmAsUnits > 0) {
                   dailyPayArray.push(
@@ -584,295 +623,347 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                       (BU + LU + LB + extraKmAsUnits) * payRate * weekendOT
                     )
                   );
-                  payDiv.innerText += ` Sched OT 200%:  ${rounded(
+                  payDiv.innerText += ` Sched OT 200%: .........................................................................................\n`;
+                  unitDiv.innerText += `${rounded(
                     BU + LU + LB + extraKmAsUnits
-                  )}: ${rounded(
+                  )}: ................................................................................................................................\n`;
+                  amountDiv.innerText += `${rounded(
                     (BU + LU + LB + extraKmAsUnits) * payRate * weekendOT
-                  )}   \n`;
+                  )}\n`;
                 }
               }
-              // sat PH = 200% max, sunday = 200% max
-              if (
-                weekdays[i] === "Sunday" ||
-                (weekdays[i] === "Saturday" && publicHoliday)
-              ) {
-                //milage eg 7'30"
-                dailyPayArray.push(rounded(shiftLength * payRate));
-                // excess is 200%
-                dailyPayArray.push(
-                  rounded(
-                    (milageOTUnits + BU + LU + LB + extraKmAsUnits) *
-                      payRate *
-                      weekendOT
-                  )
-                );
-                payDiv.innerText += ` Ordinary Hours:  ${shiftLength}: ${rounded(
-                  shiftLength * payRate
-                )}   \n`;
-                payDiv.innerText += ` Sched OT 200%:  ${rounded(
-                  milageOTUnits + BU + LU + LB + extraKmAsUnits
-                )}: ${rounded(
+            }
+            // sat PH = 200% max, sunday = 200% max
+            if (
+              weekdays[i] === "Sunday" ||
+              (weekdays[i] === "Saturday" && publicHoliday)
+            ) {
+              //milage eg 7'30"
+              dailyPayArray.push(rounded(shiftLength * payRate));
+              // excess is 200%
+              dailyPayArray.push(
+                rounded(
                   (milageOTUnits + BU + LU + LB + extraKmAsUnits) *
                     payRate *
                     weekendOT
-                )}   \n`;
-              }
-            }
-            if (milageUnits >= 8) {
-              // weekday non ph, all OT is 150%
-              if (
-                weekdays[i] !== "Saturday" &&
-                weekdays[i] !== "Sunday" &&
-                !publicHoliday
-              ) {
-                //milage eg 7'30"
-                dailyPayArray.push(rounded(shiftLength * payRate));
-                //excess is 150% on weekdays eg - 30" + any LU LB BU etc
-                dailyPayArray.push(
-                  rounded(
-                    (dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits) *
-                      payRate *
-                      weekdayOT
-                  )
-                );
-
-                payDiv.innerText += ` Ordinary Hours:  ${shiftLength}: ${rounded(
-                  shiftLength * payRate
-                )}   \n`;
-                payDiv.innerText += ` Sched OT 150%:  ${rounded(
-                  dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits
-                )}: ${rounded(
-                  (dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits) *
-                    payRate *
-                    weekdayOT
-                )}   \n`;
-              }
-              // saturday or weekday ph - 150% to 8 hours, over 8 OT is 200%
-              if (
-                weekdays[i] === "Saturday" ||
-                (weekdays[i] !== "Sunday" &&
-                  weekdays[i] !== "Saturday" &&
-                  publicHoliday)
-              ) {
-                //milage eg 7'30"
-                dailyPayArray.push(rounded(shiftLength * payRate));
-                // excess over 8 hours is 200%
-                dailyPayArray.push(
-                  rounded(
-                    (dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits) *
-                      payRate *
-                      weekendOT
-                  )
-                );
-                // ADD A LOADING FOR SATURDAY OR PUBLIC HOLIDAY
-                payDiv.innerText += ` Ordinary Hours:  ${shiftLength}: ${rounded(
-                  shiftLength * payRate
-                )}   \n`;
-                payDiv.innerText += ` Sched OT 200%:  ${rounded(
-                  dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits
-                )}: ${rounded(
-                  (dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits) *
-                    payRate *
-                    weekendOT
-                )}   \n`;
-              }
-              // sat PH = 200% max, sunday = 200% max
-              if (
-                weekdays[i] === "Sunday" ||
-                (weekdays[i] === "Saturday" && publicHoliday)
-              ) {
-                //milage eg 7'30"
-                dailyPayArray.push(rounded(shiftLength * payRate));
-                // excess is 200%
-                dailyPayArray.push(
-                  rounded(
-                    (dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits) *
-                      payRate *
-                      weekendOT
-                  )
-                );
-                payDiv.innerText += ` Ordinary Hours:  ${shiftLength}: ${rounded(
-                  shiftLength * payRate
-                )}   \n`;
-                payDiv.innerText += ` Sched OT 200%:  ${rounded(
-                  dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits
-                )}: ${rounded(
-                  (dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits) *
-                    payRate *
-                    weekendOT
-                )}   \n`;
-              }
-            }
-            if (callOut && weekdays !== "Saturday" && weekdays !== "Sunday") {
-              dailyPayArray.push(
-                rounded(shiftLength * payRate * callOutPenalty)
+                )
               );
-              payDiv.innerText += ` Callout @ 25%:  ${rounded(
-                shiftLength
-              )}: ${rounded(
-                (dailyUnits + BU + LU + LB + extraKmAsUnits) *
+
+              payDiv.innerText += ` Ordinary Hours: ....................................................................................................\n`;
+              unitDiv.innerText += `  ${shiftLength}: ...........................................................................................................................\n`;
+              amountDiv.innerText += ` ${rounded(shiftLength * payRate)}\n`;
+
+              payDiv.innerText += ` Sched OT 200%: ......................................................................................\n`;
+              unitDiv.innerText += `${rounded(
+                milageOTUnits + BU + LU + LB + extraKmAsUnits
+              )}: ..........................................................................................................................\n`;
+              amountDiv.innerText += `${rounded(
+                (milageOTUnits + BU + LU + LB + extraKmAsUnits) *
                   payRate *
-                  callOutPenalty
-              )}   \n`;
+                  weekendOT
+              )}\n`;
             }
           }
+        }
+        if (milageUnits >= 8) {
+          // weekday non ph, all OT is 150%
+          if (
+            weekdays[i] !== "Saturday" &&
+            weekdays[i] !== "Sunday" &&
+            !publicHoliday
+          ) {
+            //milage eg 7'30"
+            dailyPayArray.push(rounded(shiftLength * payRate));
+            //excess is 150% on weekdays eg - 30" + any LU LB BU etc
+            dailyPayArray.push(
+              rounded(
+                (dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits) *
+                  payRate *
+                  weekdayOT
+              )
+            );
+            payDiv.innerText += ` Ordinary Hours: ....................................................................................................\n`;
+            unitDiv.innerText += `  ${shiftLength}: .............................................................................................................\n`;
+            amountDiv.innerText += ` ${rounded(shiftLength * payRate)}\n`;
+            payDiv.innerText += ` Sched OT 150%: ......................................................................................\n`;
+            unitDiv.innerText += `${rounded(
+              dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits
+            )}: ...........................................................................................................................\n`;
+            amountDiv.innerText += `${rounded(
+              (dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits) *
+                payRate *
+                weekdayOT
+            )}\n`;
+          }
+          // saturday or weekday ph - 150% to 8 hours, over 8 OT is 200%
+          if (
+            weekdays[i] === "Saturday" ||
+            (weekdays[i] !== "Sunday" &&
+              weekdays[i] !== "Saturday" &&
+              publicHoliday)
+          ) {
+            //milage eg 7'30"
+            dailyPayArray.push(rounded(shiftLength * payRate));
+            // excess over 8 hours is 200%
+            dailyPayArray.push(
+              rounded(
+                (dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits) *
+                  payRate *
+                  weekendOT
+              )
+            );
+            // ADD A LOADING FOR SATURDAY OR PUBLIC HOLIDAY
+            payDiv.innerText += ` Ordinary Hours: ......................................................................................\n`;
+            unitDiv.innerText += `  ${shiftLength}: .............................................................................................................\n`;
+            amountDiv.innerText += ` ${rounded(shiftLength * payRate)}\n`;
 
-          //LOADINGS BASED ON WORKING HOURS.
-          //NEED TO REFACTOR TO ROUND UP OR DOWN THE MINUTES FOR AN EXTRA UNIT OF PAY - 30 MINUTES IS DOWN
-          // saturday loading
-          if (weekdays[i] === "Saturday" && !publicHoliday) {
-            if (Math.round(dailyUnits) < 8) {
-              dailyPayArray.push(
-                rounded(Math.round(dailyUnits) * payRate * satLoading)
-              );
-              payDiv.innerText += ` Loading @ 50% Saturday:  ${Math.round(
-                dailyUnits
-              )}: ${rounded(
-                Math.round(dailyUnits) * payRate * satLoading
-              )}   \n`;
-            } else {
-              dailyPayArray.push(rounded(shiftLength * payRate * satLoading));
-              payDiv.innerText += ` Loading @ 50% Saturday:  ${shiftLength}: ${rounded(
-                shiftLength * payRate * satLoading
-              )}   \n`;
-            }
+            payDiv.innerText += ` Sched OT 200%: ......................................................................................\n`;
+            unitDiv.innerText += `${rounded(
+              dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits
+            )}: ...........................................................................................................................\n`;
+            amountDiv.innerText += `${rounded(
+              (dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits) *
+                payRate *
+                weekendOT
+            )}\n`;
           }
-          // sunday loading
-          if (weekdays[i] === "Sunday" && !publicHoliday) {
+          // sat PH = 200% max, sunday = 200% max
+          if (
+            weekdays[i] === "Sunday" ||
+            (weekdays[i] === "Saturday" && publicHoliday)
+          ) {
+            //milage eg 7'30"
+            dailyPayArray.push(rounded(shiftLength * payRate));
+            // excess is 200%
+            dailyPayArray.push(
+              rounded(
+                (dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits) *
+                  payRate *
+                  weekendOT
+              )
+            );
+
+            payDiv.innerText += ` Ordinary Hours: ......................................................................................\n`;
+            unitDiv.innerText += `  ${shiftLength}: .............................................................................................................\n`;
+            amountDiv.innerText += ` ${rounded(shiftLength * payRate)}\n`;
+
+            payDiv.innerText += ` Sched OT 200%: ......................................................................................\n`;
+            unitDiv.innerText += `${rounded(
+              dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits
+            )}: ...........................................................................................................................\n`;
+            amountDiv.innerText += `${rounded(
+              (dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits) *
+                payRate *
+                weekendOT
+            )}\n`;
+          }
+        }
+        if (callOut && weekdays !== "Saturday" && weekdays !== "Sunday") {
+          dailyPayArray.push(rounded(shiftLength * payRate * callOutPenalty));
+          payDiv.innerText += ` Callout @ 25%: ......................................................................................\n`;
+          unitDiv.innerText += `${rounded(
+            shiftLength
+          )}: ...........................................................................................................................\n`;
+          amountDiv.innerText += `${rounded(
+            (dailyUnits + BU + LU + LB + extraKmAsUnits) *
+              payRate *
+              callOutPenalty
+          )}\n`;
+        }
+
+        //LOADINGS BASED ON WORKING HOURS.
+        //NEED TO REFACTOR TO ROUND UP OR DOWN THE MINUTES FOR AN EXTRA UNIT OF PAY - 30 MINUTES IS DOWN
+        // saturday loading
+        if (weekdays[i] === "Saturday" && !publicHoliday) {
+          if (Math.round(dailyUnits) < 8) {
+            dailyPayArray.push(
+              rounded(Math.round(dailyUnits) * payRate * satLoading)
+            );
+            payDiv.innerText += ` Loading @ 50% Saturday: ......................................................................................\n`;
+            unitDiv.innerText += `${Math.round(
+              dailyUnits
+            )}: ...........................................................................................................................\n`;
+            amountDiv.innerText += `${rounded(
+              Math.round(dailyUnits) * payRate * satLoading
+            )}\n`;
+          } else {
+            dailyPayArray.push(rounded(shiftLength * payRate * satLoading));
+            payDiv.innerText += ` Loading @ 50% Saturday: ......................................................................................\n`;
+            unitDiv.innerText += `${shiftLength}: .................................................................................................................\n`;
+            amountDiv.innerText += `${rounded(
+              shiftLength * payRate * satLoading
+            )}\n`;
+          }
+        }
+        // sunday loading
+        if (weekdays[i] === "Sunday" && !publicHoliday) {
+          if (Math.round(dailyUnits) < 8) {
+            dailyPayArray.push(
+              rounded(Math.round(dailyUnits) * payRate * sunLoading)
+            );
+
+            payDiv.innerText += ` Loading @ 100% Sunday: ......................................................................................\n`;
+            unitDiv.innerText += `${Math.round(
+              dailyUnits
+            )}: .................................................................................................................\n`;
+            amountDiv.innerText += `${rounded(
+              Math.round(dailyUnits) * payRate * sunLoading
+            )}\n`;
+          } else {
+            dailyPayArray.push(rounded(shiftLength * payRate * sunLoading));
+            payDiv.innerText += ` Loading @ 100% Sunday: ......................................................................................\n`;
+            unitDiv.innerText += `${shiftLength}: .................................................................................................................\n`;
+            amountDiv.innerText += `${rounded(
+              shiftLength * payRate * sunLoading
+            )}\n`;
+          }
+        }
+        // public holiday loading
+        if (publicHoliday && daysWorkedCounter <= ordinaryDays) {
+          // weekend PH is 100%
+          if (weekdays[i] === "Sunday" || weekdays[i] === "Saturday") {
             if (Math.round(dailyUnits) < 8) {
               dailyPayArray.push(
                 rounded(Math.round(dailyUnits) * payRate * sunLoading)
               );
-              payDiv.innerText += ` Loading @ 100% Sunday:  ${Math.round(
+              payDiv.innerText += ` PH Loading @ 100%: ......................................................................................\n`;
+              unitDiv.innerText += `${Math.round(
                 dailyUnits
-              )}: ${rounded(
+              )}: .................................................................................................................\n`;
+              amountDiv.innerText += `${rounded(
                 Math.round(dailyUnits) * payRate * sunLoading
-              )}   \n`;
+              )}\n`;
             } else {
               dailyPayArray.push(rounded(shiftLength * payRate * sunLoading));
-              payDiv.innerText += ` Loading @ 100% Sunday:  ${shiftLength}: ${rounded(
+              payDiv.innerText += ` PH Loading @ 100%: ......................................................................................\n`;
+              unitDiv.innerText += `${shiftLength}: .................................................................................................................\n`;
+              amountDiv.innerText += `${rounded(
                 shiftLength * payRate * sunLoading
-              )}   \n`;
+              )}\n`;
             }
-          }
-          // public holiday loading
-          if (publicHoliday) {
-            // weekend PH is 100%
-            if (weekdays[i] === "Sunday" || weekdays[i] === "Saturday") {
-              if (Math.round(dailyUnits) < 8) {
-                dailyPayArray.push(
-                  rounded(Math.round(dailyUnits) * payRate * sunLoading)
-                );
-                payDiv.innerText += ` PH Loading @ 100%:  ${Math.round(
-                  dailyUnits
-                )}: ${rounded(
-                  Math.round(dailyUnits) * payRate * sunLoading
-                )}   \n`;
-              } else {
-                dailyPayArray.push(rounded(shiftLength * payRate * sunLoading));
-                payDiv.innerText += ` PH Loading @ 100%:  ${shiftLength}: ${rounded(
-                  shiftLength * payRate * sunLoading
-                )}   \n`;
-              }
+          } else {
+            if (Math.round(dailyUnits) < 8) {
+              // weekday PH is 50%
+              dailyPayArray.push(
+                rounded(Math.round(dailyUnits) * payRate * satLoading)
+              );
+              payDiv.innerText += ` PH Loading @ 50%: ......................................................................................\n`;
+              unitDiv.innerText += `${Math.round(
+                dailyUnits
+              )}: .................................................................................................................\n`;
+              amountDiv.innerText += `${rounded(
+                Math.round(dailyUnits) * payRate * satLoading
+              )}\n`;
             } else {
-              if (Math.round(dailyUnits) < 8) {
-                // weekday PH is 50%
-                dailyPayArray.push(
-                  rounded(Math.round(dailyUnits) * payRate * satLoading)
-                );
-                payDiv.innerText += ` PH Loading @ 50%:  ${Math.round(
-                  dailyUnits
-                )}: ${rounded(
-                  Math.round(dailyUnits) * payRate * satLoading
-                )}   \n`;
-              } else {
-                dailyPayArray.push(rounded(shiftLength * payRate * satLoading));
-                payDiv.innerText += ` PH Loading @ 50%:  ${shiftLength}: ${rounded(
-                  shiftLength * payRate * satLoading
-                )}   \n`;
-              }
+              dailyPayArray.push(rounded(shiftLength * payRate * satLoading));
+
+              payDiv.innerText += ` PH Loading @ 50%: ......................................................................................\n`;
+              unitDiv.innerText += `${shiftLength}: .................................................................................................................\n`;
+              amountDiv.innerText += `${rounded(
+                shiftLength * payRate * satLoading
+              )}\n`;
             }
           }
-          //SHIFT ALLOWANCE PENALTIES - ONLY ON WEEKDAYS
+        }
+        //SHIFT ALLOWANCE PENALTIES - ONLY ON WEEKDAYS
+        if (
+          weekdays[i] !== "Sunday" &&
+          weekdays[i] !== "Saturday" &&
+          !publicHoliday
+        ) {
+          if (tableArray[i][1] >= 400 && tableArray[i][1] <= 530) {
+            console.log("its morning shift!");
+            if (Math.round(dailyUnits) >= 8) {
+              dailyPayArray.push(shiftLength * EarlyMorningShiftPenalty);
+              payDiv.innerText += ` Morning Shift Dvrs/Grds Hrl: ......................................................................................\n`;
+              unitDiv.innerText += `${shiftLength}: ...................................................................................................\n`;
+              amountDiv.innerText += `${
+                shiftLength * EarlyMorningShiftPenalty
+              }\n`;
+            } else {
+              dailyPayArray.push(
+                Math.round(dailyUnits) * EarlyMorningShiftPenalty
+              );
+              payDiv.innerText += ` Morning Shift Dvrs/Grds Hrl: ......................................................................................\n`;
+              unitDiv.innerText += `${Math.round(
+                dailyUnits
+              )}: .................................................................................................................\n`;
+              amountDiv.innerText += `${
+                Math.round(dailyUnits) * EarlyMorningShiftPenalty
+              }\n`;
+            }
+          }
+          if (tableArray[i][1] < 1800 && tableArray[i][3] > 1800) {
+            console.log("its arvo shift!");
+            if (Math.round(dailyUnits) >= 8) {
+              dailyPayArray.push(shiftLength * AfternoonShiftPenalty);
+              payDiv.innerText += `Afternoon Shift Dvrs/Grds Hrl: ......................................................................................\n`;
+              unitDiv.innerText += `${shiftLength}: .................................................................................................................\n`;
+              amountDiv.innerText += `${shiftLength * AfternoonShiftPenalty}\n`;
+            } else {
+              dailyPayArray.push(
+                Math.round(dailyUnits) * AfternoonShiftPenalty
+              );
+              payDiv.innerText += `Afternoon Shift Dvrs/Grds Hrl: ......................................................................................\n`;
+              unitDiv.innerText += `${Math.round(
+                dailyUnits
+              )}: .................................................................................................................\n`;
+              amountDiv.innerText += `${
+                Math.round(dailyUnits) * AfternoonShiftPenalty
+              }\n`;
+            }
+          }
+          if (tableArray[i][1] <= 359 || tableArray[i][1] >= 1800) {
+            if (Math.round(dailyUnits) < 8) {
+              dailyPayArray.push(Math.round(dailyUnits) * nightShiftPenalty);
+              payDiv.innerText += `Night Shift Dvrs/Grds Hrl: ......................................................................................\n`;
+              unitDiv.innerText += `${Math.round(
+                dailyUnits
+              )}: .................................................................................................................\n`;
+              amountDiv.innerText += `${
+                Math.round(dailyUnits) * nightShiftPenalty
+              }\n`;
+            } else {
+              dailyPayArray.push(shiftLength * nightShiftPenalty);
+              payDiv.innerText += `Night Shift Dvrs/Grds Hrl: ......................................................................................\n`;
+              unitDiv.innerText += `${shiftLength}: .................................................................................................................\n`;
+              amountDiv.innerText += `${shiftLength * nightShiftPenalty}\n`;
+            }
+          }
+          //SPECIAL SHIFT LOADING ONE UNIT PER SHIFT
           if (
-            weekdays[i] !== "Sunday" &&
-            weekdays[i] !== "Saturday" &&
-            !publicHoliday
+            (tableArray[i][1] >= 101 && tableArray[i][1] <= 359) ||
+            (tableArray[i][3] >= 101 && tableArray[i][3] <= 359)
+            //WHAT IF THE SHIFT STARTS ON A NON PH AND FINISHES ON A PH IN THE SPECIAL LOADING PERIOD?
           ) {
-            if (tableArray[i][1] >= 400 && tableArray[i][1] <= 530) {
-              console.log("its morning shift!");
-              if (Math.round(dailyUnits) >= 8) {
-                dailyPayArray.push(shiftLength * EarlyMorningShiftPenalty);
-                payDiv.innerText += ` Morning Shift Dvrs/Grds Hrl:  ${shiftLength}: ${
-                  shiftLength * EarlyMorningShiftPenalty
-                }   \n`;
-              } else {
-                dailyPayArray.push(
-                  Math.round(dailyUnits) * EarlyMorningShiftPenalty
-                );
-                payDiv.innerText += ` Morning Shift Dvrs/Grds Hrl:  ${Math.round(
-                  dailyUnits
-                )}: ${Math.round(dailyUnits) * EarlyMorningShiftPenalty}   \n`;
-              }
-            }
-            if (tableArray[i][1] < 1800 && tableArray[i][3] > 1800) {
-              console.log("its arvo shift!");
-              if (Math.round(dailyUnits) >= 8) {
-                dailyPayArray.push(shiftLength * AfternoonShiftPenalty);
-                payDiv.innerText += ` Afternoon Shift Dvrs/Grds Hrl:  ${shiftLength}: ${
-                  shiftLength * AfternoonShiftPenalty
-                }   \n`;
-              } else {
-                dailyPayArray.push(
-                  Math.round(dailyUnits) * AfternoonShiftPenalty
-                );
-                payDiv.innerText += ` Afternoon Shift Dvrs/Grds Hrl:  ${Math.round(
-                  dailyUnits
-                )}: ${Math.round(dailyUnits) * AfternoonShiftPenalty}   \n`;
-              }
-            }
-            if (tableArray[i][1] <= 359 || tableArray[i][1] >= 1800) {
-              if (Math.round(dailyUnits) < 8) {
-                dailyPayArray.push(Math.round(dailyUnits) * nightShiftPenalty);
-                payDiv.innerText += ` Night Shift Dvrs/Grds Hrl:  ${Math.round(
-                  dailyUnits
-                )}: ${Math.round(dailyUnits) * nightShiftPenalty}   \n`;
-              } else {
-                dailyPayArray.push(shiftLength * nightShiftPenalty);
-                payDiv.innerText += ` Night Shift Dvrs/Grds Hrl:  ${shiftLength}: ${
-                  shiftLength * nightShiftPenalty
-                }   \n`;
-              }
-            }
-            //SPECIAL SHIFT LOADING ONE UNIT PER SHIFT
-            if (
-              (tableArray[i][1] >= 101 && tableArray[i][1] <= 359) ||
-              (tableArray[i][3] >= 101 && tableArray[i][3] <= 359)
-              //WHAT IF THE SHIFT STARTS ON A NON PH AND FINISHES ON A PH IN THE SPECIAL LOADING PERIOD?
-            ) {
-              dailyPayArray.push(specialLoading);
-              payDiv.innerText += ` Special Loading Drvs/Grds:  1: ${specialLoading}   \n`;
-            }
+            dailyPayArray.push(specialLoading);
+            payDiv.innerText += `Special Loading Drvs/Grds: ......................................................................................\n`;
+            unitDiv.innerText += `1: .............................................................................................................\n`;
+            amountDiv.innerText += `${specialLoading}\n`;
           }
         }
 
         //add security if ticked - single unit per shift
         if (security) {
           dailyPayArray.push(securityAllowance);
-          payDiv.innerText += ` Guards Security Allow:  1: ${securityAllowance}   \n`;
+          payDiv.innerText += `Guards Security Allow: ......................................................................................\n`;
+          unitDiv.innerText += `1: ...........................................................................................................................\n`;
+          amountDiv.innerText += `${securityAllowance}\n`;
         }
         //add cab if ticked - single unit per shift
         if (cab) {
           dailyPayArray.push(cabEtrAllowance);
-          payDiv.innerText += ` Elec Guards Spl Shift All:  1: ${cabEtrAllowance}   \n`;
+          payDiv.innerText += `Elec Guards Spl Shift All: ......................................................................................\n`;
+          unitDiv.innerText += `1: ...........................................................................................................................\n`;
+          amountDiv.innerText += `${cabEtrAllowance}\n`;
         }
         //add public holiday paid if ticked and accrue is not ticked
         //CHECK IF THIS IS 8 HOURS REGARDLESS OR ACTUAL WORKING HOURS
         if (publicHoliday && !accruePh) {
           dailyPayArray.push(rounded(shiftLength * payRate));
-          payDiv.innerText += ` Public Holiday Paid:  ${shiftLength}: ${rounded(
-            shiftLength * payRate
-          )}   \n`;
+          payDiv.innerText += `Public Holiday Paid: ......................................................................................\n`;
+          unitDiv.innerText += `${shiftLength}: .........................................................................................................................................\n`;
+          amountDiv.innerText += `${rounded(shiftLength * payRate)}\n`;
         }
         // accrue public holiday, doesnt get paid.
         if (accruePh) {
@@ -895,23 +986,24 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
         //ADD THE ROSTERED HOURS TO THE SHORTFALL
         //WHAT HAPPENS TO PUBLIC HOLIDAY IF SICK??????
         if (timeAsUnits[i][1] === "Sick") {
-          timeLost += timeAsUnits[i][4];
+          timeLost += dailyUnits;
           sickDays++;
-          ordinaryUnits -= dailyUnits;
           console.log(`sick day - lost ${dailyUnits} of ordinary Time`);
           dailyPayArray.push(rounded(shiftLength * payRate));
-          payDiv.innerText += `Sick: ${shiftLength}: ${rounded(
-            shiftLength * payRate
-          )}\n`;
+
+          payDiv.innerText += `Sick: ..............................................................................................................................................\n`;
+          unitDiv.innerText += `${shiftLength}: .........................................................................................................................................\n`;
+          amountDiv.innerText += `${rounded(shiftLength * payRate)}\n`;
         }
 
         //HOL
         if (timeAsUnits[i] === "Hol") {
           console.log(`HOL - public holiday not required`);
           dailyPayArray.push(rounded(shiftLength * payRate));
-          payDiv.innerText += `HOL: ${shiftLength}: ${rounded(
-            shiftLength * payRate
-          )}\n`;
+
+          payDiv.innerText += `HOL: ............................................................................................................................................................\n`;
+          unitDiv.innerText += `${shiftLength}: .......................................................................................................................................................\n`;
+          amountDiv.innerText += `${rounded(shiftLength * payRate)}\n`;
         }
       }
 
@@ -936,7 +1028,10 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     else {
       dailyPayArray = [];
       console.log("day off");
-      payDiv.innerText += `\n${weekdays[i]}:  DAY OFF\n`;
+      payDiv.innerText += ` \n${weekdays[i]}:  DAY OFF\n`;
+      unitDiv.innerText += ` \n\n`;
+      amountDiv.innerText += ` \n\n`;
+
       // PUBLIC HOLIDAY ON A DAY OFF
       payPh = tableArray[i][7];
       accruePh = tableArray[i][8];
@@ -948,9 +1043,9 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       //add public holiday paid if ticked and accrue is not ticked
       if (publicHoliday && !accruePh) {
         dailyPayArray.push(rounded(shiftLength * payRate));
-        payDiv.innerText += ` Public Holiday Paid:  ${shiftLength}: ${rounded(
-          shiftLength * payRate
-        )}   \n`;
+        payDiv.innerText += `Public Holiday Paid: ...........................................................................................................................................................\n`;
+        unitDiv.innerText += `${shiftLength}: ..................................................................................................................................................................................\n`;
+        amountDiv.innerText += `${rounded(shiftLength * payRate)}\n`;
       }
       // accrue public holiday, doesnt get paid.
       if (accruePh) {
@@ -969,14 +1064,15 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
   // DOES IT MATTER WHERE THE ADO IS IN THE FORTNIGHT??
   if (adoWeek === "long") {
     payArray.push(rounded(adoAdjustment * -1));
-    payDiv.innerText += ` \nAccrued Day Off - Adjustm:  4: ${rounded(
-      adoAdjustment * -1
-    )}   \n`;
+    payDiv.innerText += ` \nADO Adjustm: .............................................................................................................................................\n`;
+    unitDiv.innerText += ` \n-4: ....................................................................................................................................................................\n`;
+    amountDiv.innerText += ` \n${rounded(adoAdjustment * -1)}\n`;
   } else {
     payArray.push(rounded(adoAdjustment));
-    payDiv.innerText += ` \nAccrued Day Off - Adjustm:  4: ${rounded(
-      adoAdjustment
-    )}   \n`;
+    // payDiv.innerText += ` \nADO Adjustm:  4: ${rounded(adoAdjustment)}   \n`;
+    payDiv.innerText += ` \nADO Adjustm: ...............................................................................................................................\n`;
+    unitDiv.innerText += ` \n4: ......................................................................................................................................................\n`;
+    amountDiv.innerText += ` \n${rounded(adoAdjustment)}\n`;
   }
 
   //guarantee payment
@@ -1002,9 +1098,9 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       )} for ${shortFall} hours shortfall!`
     );
     payArray.push(rounded(shortFall * payRate));
-    payDiv.innerText += ` \nGuarantee: ${shortFall}: ${rounded(
-      shortFall * payRate
-    )}   \n`;
+    payDiv.innerText += ` \nGuarantee: ...............................................................................................................................\n`;
+    unitDiv.innerText += ` \n${shortFall}: ......................................................................................................................................................\n`;
+    amountDiv.innerText += ` \n${rounded(shortFall * payRate)}\n`;
   }
 
   console.log(wobodArray);
@@ -1021,9 +1117,11 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
             wobodShift[0]
           }'s shift: ${rounded(wobodShift[1] * payRate * WOBOD)}`
         );
-        payDiv.innerText += ` \nNEXT FORTNIGHT WOBOD PAYMENT: ${
-          wobodShift[0]
-        } - ${rounded(wobodShift[1] * payRate * WOBOD)}   \n`;
+        payDiv.innerText += `NEXT FORTNIGHT WOBOD PAYMENT: ...............................................................................................................................\n`;
+        unitDiv.innerText += ` \n@${wobodShift[0]}......................................................................................................................................................\n`;
+        amountDiv.innerText += ` \n${rounded(
+          wobodShift[1] * payRate * WOBOD
+        )}\n`;
       }
       // with callout - wobod = 23%
       else {
@@ -1032,9 +1130,9 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
             wobodShift[0]
           }'s shift: ${rounded(wobodShift[1] * payRate * 0.23)}`
         );
-        payDiv.innerText += ` \nNEXT FORTNIGHT WOBOD PAYMENT: ${
-          wobodShift[0]
-        } - ${rounded(wobodShift[1] * payRate * 0.23)}   \n`;
+        payDiv.innerText += `NEXT FORTNIGHT WOBOD PAYMENT: ...............................................................................................................................\n`;
+        unitDiv.innerText += ` \n@${wobodShift[0]}......................................................................................................................................................\n`;
+        amountDiv.innerText += ` \n${rounded(wobodShift[1] * payRate * 0.23)}\n`;
       }
     });
   }
@@ -1049,9 +1147,11 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
               OTdays - sickDays
             }. OT Bonus = ${bonusOtRates[i]}`
           );
-          payDiv.innerText += ` \n Overtime Days: ${OTdays} - Days Sick: ${sickDays} = ${
+          payDiv.innerText += `Overtime Days: ${OTdays} - Days Sick: ${sickDays} =...............................................................................................................................\n`;
+          unitDiv.innerText += ` \n${
             OTdays - sickDays
-          }. OT Bonus = ${bonusOtRates[i]}  \n`;
+          }......................................................................................................................................................\n`;
+          amountDiv.innerText += ` \n${bonusOtRates[i]}\n`;
         }
       }
     } else if (OTdays - sickDays >= 4) {
@@ -1060,9 +1160,11 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
           OTdays - sickDays
         }. OT Bonus = ${bonusOtRates[2]}`
       );
-      payDiv.innerText += ` \n Overtime Days: ${OTdays} - Days Sick: ${sickDays} = ${
+      payDiv.innerText += `Overtime Days: ${OTdays} - Days Sick: ${sickDays} =...............................................................................................................................\n`;
+      unitDiv.innerText += ` \n${
         OTdays - sickDays
-      }. OT Bonus = ${bonusOtRates[2]}  \n`;
+      }......................................................................................................................................................\n`;
+      amountDiv.innerText += ` \n${bonusOtRates[2]}\n`;
     } else {
       console.log(
         `Overtime Days: ${OTdays} - Days Sick: ${sickDays} = ${
@@ -1083,8 +1185,11 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       GrossPay += payArray[i];
     }
   }
+  GrossPay += shortFall * payRate;
   console.log(GrossPay);
-  payDiv.innerText += ` \n Gross Pay:  ${rounded(GrossPay)}   \n`;
+  payDiv.innerText += ` \n Gross Pay:\n`;
+  unitDiv.innerText += ` \n\n`;
+  amountDiv.innerText += ` \n  ${rounded(GrossPay)}   \n`;
 };
 
 //rounds to 2 decimal places
