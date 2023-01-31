@@ -4,7 +4,6 @@ storeData = () => {
   const payRate = parseFloat(table[2].value);
   let role;
   let adoWeek;
-
   //driver or guard
   if (table[0].checked) {
     role = table[0].value;
@@ -19,27 +18,39 @@ storeData = () => {
     adoWeek = table[4].value;
   }
 
-  //array for all data in timesheet table
-  let tableArray = [];
-  //array for single row in table
-  let rowArray = [];
-  for (let i = 5; i < table.length; i++) {
-    //determine if end of row
-    if (table[i].readOnly) {
-      tableArray.push(rowArray);
-      rowArray = [];
-      continue;
-    }
-    //if checkbox, see if its checked or not
-    if (table[i].getAttribute("type") === "checkbox") {
-      rowArray.push(table[i].checked);
-      continue;
-    }
-    //else store the value of the input into the array for that row.
-    rowArray.push(table[i].value);
+  if(table[2].value.trim()=== ""){
+    alert('ENTER A PAY RATE!')
   }
+  else if(table[0].checked == false && table[1].checked == false){
+    alert('ARE YOU A DRIVER OR GUARD?');
+  }
+  else if(table[3].checked == false && table[4].checked == false){
+    alert('IS IT A LONG OR SHORT FORTNIGHT?')
+  }
+  else{
 
-  calculatePay(payRate, adoWeek, tableArray, role);
+    //array for all data in timesheet table
+    let tableArray = [];
+    //array for single row in table
+    let rowArray = [];
+    for (let i = 5; i < table.length; i++) {
+      //determine if end of row
+      if (table[i].readOnly) {
+        tableArray.push(rowArray);
+        rowArray = [];
+        continue;
+      }
+      //if checkbox, see if its checked or not
+      if (table[i].getAttribute("type") === "checkbox") {
+        rowArray.push(table[i].checked);
+        continue;
+      }
+      //else store the value of the input into the array for that row.
+      rowArray.push(table[i].value);
+    }
+    
+    calculatePay(payRate, adoWeek, tableArray, role);
+  }
 };
 
 calculatePay = (payRate, adoWeek, tableArray, role) => {
