@@ -760,7 +760,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                     //penalty is 150% for the first 8 hours, even on a non PH saturday
                     MilagePayment(milageBU);
                     //until after 8 hours saturday when it becomes 200%
-                    doubleOT(
+                    DoubleOT(
                       shiftFinishUnits - milageBU + LU + BU + extraKmAsUnits
                     );
                   }
@@ -768,7 +768,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                   if (shiftDayFinish === "Saturday" && dayAfterPH) {
                     //there is no milage penalty for sat PH, only the buildup payment
                     //but everything after the milage unit is 200%
-                    doubleOT(
+                    DoubleOT(
                       dailyUnits - milageUnits + LU + LB + extraKmAsUnits
                     );
                   }
@@ -1406,7 +1406,9 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
 
   function milageBuildUp(milageBU) {
     dailyPayArray.push(rounded(milageBU * payRate));
-    payDiv.innerText += `209km passed at ${milagePassedAt} - Buildup: ...............................................................................................................  \n`;
+    payDiv.innerText += `209km passed at ${Math.trunc(milagePassedAt)}'${Math.round(
+      (milagePassedAt - Math.trunc(milagePassedAt)) * 60
+    )} - Buildup: ...............................................................................................................  \n`;
     unitDiv.innerText += `  ${rounded(
       milageBU
     )}: .................................................................................................................................................... \n`;

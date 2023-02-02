@@ -131,6 +131,10 @@ h1 {
   margin-right: 1px;
 }
 
+.displayHours {
+  background-color: lightblue;
+}
+
 .commentsCol {
   flex: 0 1 content;
   /* min-width: 100px; */
