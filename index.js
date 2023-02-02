@@ -139,10 +139,12 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
   //displaying information to user
   var payDiv = document.getElementById("payDetails");
   var unitDiv = document.getElementById("unitDetails");
+  var rateDiv = document.getElementById("rateDetails");
   var amountDiv = document.getElementById("amountDetails");
   //empty any existing text
   payDiv.innerText = "";
   unitDiv.innerText = ``;
+  rateDiv.innerText = ``;
   amountDiv.innerText = ``;
   for (let i = 0; i < 14; i++) {
     document.getElementsByClassName("displayHours")[i].value = ``;
@@ -192,7 +194,9 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
 
   payDiv.innerText += ` \n Details \n`;
   unitDiv.innerText += ` \nUnits\n`;
+  rateDiv.innerText += ` \nRate\n`;
   amountDiv.innerText += ` \nAmounts\n`;
+
   //CALCULATING DAILY HOURS
   for (let i = 0; i < timeAsUnits.length; i++) {
     // IF ITS NOT A DAY OFF
@@ -200,6 +204,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       //adding all the working time;
       payDiv.innerText += ` \n${weekdays[i]}: \n`;
       unitDiv.innerText += ` \n\n`;
+      rateDiv.innerText += `\n\n`;
       amountDiv.innerText += ` \n\n`;
 
       if (timeAsUnits[i] !== "Hol") {
@@ -798,8 +803,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                 if (shiftDayFinish !== "Saturday") {
                   //normal pay for shifts up to 8 hours
                   if (
-                    shiftStartUnits +
-                      shiftFinishUnits +
+                    dailyUnits +
                       LU +
                       BU +
                       LB +
@@ -847,19 +851,32 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                   }
                 }
               }
-              if (
+              if ( //if normal weekday and finishes on normal weekday
                 !publicHoliday &&
-                !callOut &&
-                shiftDayFinish !== "Saturday" &&
-                !dayAfterPH
+                !callOut
               ) {
-                morningPenalty(dailyUnits);
-                afternoonPenalty(dailyUnits);
-                nightPenalty(dailyUnits);
-                specialLoadingPenalty();
-              }
+                if(shiftDayFinish !== "Saturday" &&
+                !dayAfterPH){
+                  morningPenalty(dailyUnits);
+                  afternoonPenalty(dailyUnits);
+                  nightPenalty(dailyUnits);
+                  specialLoadingPenalty();
+                }
+                if(shiftDayFinish !== "Saturday" &&
+                dayAfterPH){
+                  morningPenalty(shiftStartUnits);
+                  afternoonPenalty(shiftStartUnits);
+                  nightPenalty(shiftStartUnits);
+                  PHweekday(shiftFinishUnits);
+                }
+              } //if public holiday and finishes on a saturday
               if (publicHoliday && shiftDayFinish === "Saturday") {
                 saturdayLoading(shiftFinishUnits);
+              }
+              if (publicHoliday && shiftDayFinish !== "Saturday") {
+                morningPenalty(shiftFinishUnits);
+                nightPenalty(shiftFinishUnits);
+                afternoonPenalty(shiftFinishUnits);
               }
               if (callOut) {
                 if (shiftDayFinish !== "Saturday") {
@@ -938,14 +955,14 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                 dailyUnits + LB + LU + BU + extraKmAsUnits > shiftLength &&
                 dailyUnits + LB + LU + BU + extraKmAsUnits < 11
               ) {
-                alert("B");
+                // alert("B");
                 NormalPay(shiftLength);
                 OneHalfOT(
-                  shiftFinishUnits + LU + BU + LB + extraKmAsUnits - shiftLength
+                  dailyUnits + LU + BU + LB + extraKmAsUnits - shiftLength
                 );
               }
               if (dailyUnits + LB + LU + BU + extraKmAsUnits > 11) {
-                alert("C");
+                // alert("C");
                 NormalPay(shiftLength);
                 OneHalfOT(3);
                 DoubleOT(dailyUnits + LU + BU + LB + extraKmAsUnits - 11);
@@ -1025,6 +1042,8 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       LB = 0;
       milageBU = 0;
       milageOTUnits = 0;
+      extraKm = 0;
+      extraKmAsUnits = 0;
       singleDay = true;
       milageShift = false;
       dayAfterPH = false;
@@ -1038,6 +1057,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       console.log("day off");
       payDiv.innerText += ` \n${weekdays[i]}:  DAY OFF\n`;
       unitDiv.innerText += ` \n\n`;
+      rateDiv.innerText += `\n\n`;
       amountDiv.innerText += ` \n\n`;
 
       // PUBLIC HOLIDAY ON A DAY OFF
@@ -1074,6 +1094,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
   console.log(GrossPay);
   payDiv.innerText += ` \n Gross Pay:\n`;
   unitDiv.innerText += ` \n\n`;
+  rateDiv.innerText += `\n\n`;
   amountDiv.innerText += ` \n  ${rounded(GrossPay)}   \n`;
 
   function morningPenalty(hours) {
@@ -1081,10 +1102,11 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       hours = 8;
     }
     if (startTimeActual >= 4 && startTimeActual <= 5.5) {
-      dailyPayArray.push(hours * EarlyMorningShiftPenalty);
+      dailyPayArray.push(Math.round(hours) * EarlyMorningShiftPenalty);
       payDiv.innerText += ` Morning Shift Dvrs/Grds Hrl: ......................................................................................\n`;
-      unitDiv.innerText += `${hours}: ...................................................................................................\n`;
-      amountDiv.innerText += `${hours * EarlyMorningShiftPenalty}\n`;
+      unitDiv.innerText += `${Math.round(hours)}: ...................................................................................................\n`;
+      rateDiv.innerText += `${EarlyMorningShiftPenalty}...................................................................................................\n`;
+      amountDiv.innerText += `${Math.round(hours) * EarlyMorningShiftPenalty}\n`;
     }
   }
 
@@ -1093,10 +1115,11 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       hours = 8;
     }
     if (startTimeActual < 18 && finishTimeActual > 18) {
-      dailyPayArray.push(hours * AfternoonShiftPenalty);
+      dailyPayArray.push(Math.round(hours) * AfternoonShiftPenalty);
       payDiv.innerText += `Afternoon Shift Dvrs/Grds Hrl: ......................................................................................\n`;
-      unitDiv.innerText += `${hours}: .................................................................................................................\n`;
-      amountDiv.innerText += `${hours * AfternoonShiftPenalty}\n`;
+      unitDiv.innerText += `${Math.round(hours)}: .................................................................................................................\n`;
+      rateDiv.innerText += `${AfternoonShiftPenalty}...................................................................................................\n`;
+      amountDiv.innerText += `${Math.round(hours) * AfternoonShiftPenalty}\n`;
     }
   }
 
@@ -1105,10 +1128,11 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       hours = 8;
     }
     if (startTimeActual <= 3.98 || startTimeActual >= 18) {
-      dailyPayArray.push(hours * nightShiftPenalty);
+      dailyPayArray.push(Math.round(hours) * nightShiftPenalty);
       payDiv.innerText += `Night Shift Dvrs/Grds Hrl: ......................................................................................\n`;
-      unitDiv.innerText += `${hours}: .................................................................................................................\n`;
-      amountDiv.innerText += `${hours * nightShiftPenalty}\n`;
+      unitDiv.innerText += `${Math.round(hours)}: .................................................................................................................\n`;
+      rateDiv.innerText += `${nightShiftPenalty}...................................................................................................\n`;
+      amountDiv.innerText += `${Math.round(hours) * nightShiftPenalty}\n`;
     }
   }
 
@@ -1121,6 +1145,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       dailyPayArray.push(specialLoading);
       payDiv.innerText += `Special Loading Drvs/Grds: ......................................................................................\n`;
       unitDiv.innerText += `1: .............................................................................................................\n`;
+      rateDiv.innerText += `${specialLoading}...................................................................................................\n`;
       amountDiv.innerText += `${specialLoading}\n`;
     }
   }
@@ -1141,6 +1166,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
           );
           payDiv.innerText += `\nNEXT FORTNIGHT WOBOD PAYMENT: ...............................................................................................................................\n`;
           unitDiv.innerText += ` \n@${wobodShift[0]}......................................................................................................................................................\n`;
+          rateDiv.innerText += `\n48%...................................................................................................\n`;
           amountDiv.innerText += ` \n${rounded(
             wobodShift[1] * payRate * WOBOD
           )}\n`;
@@ -1154,6 +1180,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
           );
           payDiv.innerText += `\nNEXT FORTNIGHT WOBOD PAYMENT: ...............................................................................................................................\n`;
           unitDiv.innerText += ` \n@${wobodShift[0]}......................................................................................................................................................\n`;
+          rateDiv.innerText += `\n23%...................................................................................................\n`;
           amountDiv.innerText += ` \n${rounded(
             wobodShift[1] * payRate * 0.23
           )}\n`;
@@ -1176,6 +1203,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
             unitDiv.innerText += ` \n${
               OTdays - sickDays
             }......................................................................................................................................................\n`;
+            rateDiv.innerText += `\n${bonusOtRates[i]}...................................................................................................\n`;
             amountDiv.innerText += ` \n${bonusOtRates[i]}\n`;
           }
         }
@@ -1189,6 +1217,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
         unitDiv.innerText += ` \n${
           OTdays - sickDays
         }......................................................................................................................................................\n`;
+        rateDiv.innerText += `\n${bonusOTRates[2]}...................................................................................................\n`;
         amountDiv.innerText += ` \n${bonusOtRates[2]}\n`;
       } else {
         console.log(
@@ -1225,6 +1254,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       payArray.push(rounded(shortFall * payRate));
       payDiv.innerText += ` \nGuarantee: ...............................................................................................................................\n`;
       unitDiv.innerText += ` \n${shortFall}: ......................................................................................................................................................\n`;
+      rateDiv.innerText += `\n${payRate}...................................................................................................\n`;
       amountDiv.innerText += ` \n${rounded(shortFall * payRate)}\n`;
     }
   }
@@ -1234,11 +1264,13 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       payArray.push(rounded(adoAdjustment * -1));
       payDiv.innerText += ` \nADO Adjustment: .............................................................................................................................................\n`;
       unitDiv.innerText += ` \n-4: ....................................................................................................................................................................\n`;
+      rateDiv.innerText += `\n${payRate}...................................................................................................\n`;
       amountDiv.innerText += ` \n${rounded(adoAdjustment * -1)}\n`;
     } else {
       payArray.push(rounded(adoAdjustment));
       payDiv.innerText += ` \nADO Adjustment: ...............................................................................................................................\n`;
       unitDiv.innerText += ` \n4: ......................................................................................................................................................\n`;
+      rateDiv.innerText += `\n${payRate}...................................................................................................\n`;
       amountDiv.innerText += ` \n${rounded(adoAdjustment)}\n`;
     }
   }
@@ -1249,6 +1281,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       dailyPayArray.push(rounded(shiftLength * payRate));
       payDiv.innerText += `Public Holiday Paid: ......................................................................................\n`;
       unitDiv.innerText += `${shiftLength}: .........................................................................................................................................\n`;
+      rateDiv.innerText += `${payRate}...................................................................................................\n`;
       amountDiv.innerText += `${rounded(shiftLength * payRate)}\n`;
     }
     // accrue public holiday, doesnt get paid.
@@ -1258,6 +1291,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       );
       payDiv.innerText += ` Public Holiday Accrued  \n`;
       unitDiv.innerText += `8\n`;
+      rateDiv.innerText += `\n`;
       amountDiv.innerText += `\n`;
     }
   }
@@ -1268,6 +1302,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
 
     payDiv.innerText += `HOL: ............................................................................................................................................................\n`;
     unitDiv.innerText += `${shiftLength}: .......................................................................................................................................................\n`;
+    rateDiv.innerText += `${payRate}...................................................................................................\n`;
     amountDiv.innerText += `${rounded(shiftLength * payRate)}\n`;
 
     if (daysWorkedCounter <= ordinaryDays) {
@@ -1286,6 +1321,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
 
     payDiv.innerText += `Sick: ..............................................................................................................................................\n`;
     unitDiv.innerText += `${shiftLength}: .........................................................................................................................................\n`;
+    rateDiv.innerText += `${payRate}...................................................................................................\n`;
     amountDiv.innerText += `${rounded(shiftLength * payRate)}\n`;
   }
 
@@ -1294,6 +1330,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       dailyPayArray.push(cabEtrAllowance);
       payDiv.innerText += `Elec Guards Spl Shift All: ......................................................................................\n`;
       unitDiv.innerText += `1: ...........................................................................................................................\n`;
+      rateDiv.innerText += `${cabEtrAllowance}...................................................................................................\n`;
       amountDiv.innerText += `${cabEtrAllowance}\n`;
     }
   }
@@ -1303,6 +1340,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       dailyPayArray.push(securityAllowance);
       payDiv.innerText += `Guards Security Allow: ......................................................................................\n`;
       unitDiv.innerText += `1: ...........................................................................................................................\n`;
+      rateDiv.innerText += `${securityAllowance}...................................................................................................\n`;
       amountDiv.innerText += `${securityAllowance}\n`;
     }
   }
@@ -1318,6 +1356,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     unitDiv.innerText += `${Math.round(
       hours
     )}: .................................................................................................................\n`;
+    rateDiv.innerText += `${payRate * satLoading}...................................................................................................\n`;
     amountDiv.innerText += `${rounded(
       Math.round(hours) * payRate * satLoading
     )}\n`;
@@ -1330,6 +1369,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     dailyPayArray.push(rounded(hours * payRate * sunLoading));
     payDiv.innerText += ` PH Loading @ 100%: ......................................................................................\n`;
     unitDiv.innerText += `${hours}: .................................................................................................................\n`;
+    rateDiv.innerText += `${payRate * sunLoading}...................................................................................................\n`;
     amountDiv.innerText += `${rounded(hours * payRate * sunLoading)}\n`;
   }
 
@@ -1342,6 +1382,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     unitDiv.innerText += `${Math.round(
       hours
     )}: ...........................................................................................................................\n`;
+    rateDiv.innerText += `${payRate * satLoading}...................................................................................................\n`;
     amountDiv.innerText += `${rounded(
       Math.round(hours) * payRate * satLoading
     )}\n`;
@@ -1357,6 +1398,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     unitDiv.innerText += `${Math.round(
       hours
     )}: .................................................................................................................\n`;
+    rateDiv.innerText += `${payRate * sunLoading}...................................................................................................\n`;
     amountDiv.innerText += `${rounded(
       Math.round(hours) * payRate * sunLoading
     )}\n`;
@@ -1370,6 +1412,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       unitDiv.innerText += ` ${rounded(
         hours
       )}: ........................................................................................................................\n`;
+      rateDiv.innerText += `${payRate*weekdayOT}...................................................................................................\n`;
       amountDiv.innerText += ` ${rounded(hours * payRate * weekdayOT)}\n`;
     }
     if (hours > 11) {
@@ -1380,6 +1423,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       unitDiv.innerText += ` ${rounded(
         11
       )}: ...................................................................................................................................... \n`;
+      rateDiv.innerText += `${payRate * weekdayOT}...................................................................................................\n`;
       amountDiv.innerText += ` ${rounded(11 * payRate * weekdayOT)}   \n`;
       // over 11 hours is 200%
       dailyPayArray.push(rounded((hours - 11) * payRate * weekendOT));
@@ -1388,6 +1432,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       unitDiv.innerText += ` ${rounded(
         hours - 11
       )}: ...................................................................................................................................... \n`;
+      rateDiv.innerText += `${payRate * weekdayOT}...................................................................................................\n`;
       amountDiv.innerText += `  ${rounded(
         (hours - 11) * payRate * weekdayOT
       )}   \n`;
@@ -1401,6 +1446,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     unitDiv.innerText += ` ${rounded(
       hours
     )}: ...................................................................................................................................... \n`;
+    rateDiv.innerText += `${payRate * weekendOT}...................................................................................................\n`;
     amountDiv.innerText += `${rounded(hours * payRate * weekendOT)}  \n`;
   }
 
@@ -1412,6 +1458,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     unitDiv.innerText += `  ${rounded(
       milageBU
     )}: .................................................................................................................................................... \n`;
+    rateDiv.innerText += `${payRate}...................................................................................................\n`;
     amountDiv.innerText += `${rounded(milageBU * payRate)}   \n`;
   }
 
@@ -1423,6 +1470,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     dailyPayArray.push(rounded(hours * payRate * callOutPenalty));
     payDiv.innerText += ` Callout @ 25%: ............................................................................................ \n`;
     unitDiv.innerText += ` ${hours}: .............................................................................................................................\n`;
+    rateDiv.innerText += `${payRate * callOutPenalty}...................................................................................................\n`;
     amountDiv.innerText += `${rounded(hours * payRate * callOutPenalty)} \n`;
   }
 
@@ -1430,6 +1478,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     dailyPayArray.push(rounded(milageOTUnits * payRate * weekdayOT));
     payDiv.innerText += ` Milage payment 209k's: ..................................................................................\n`;
     unitDiv.innerText += ` ${rounded(milageOTUnits)}: ................................................................................................................................... \n`;
+    rateDiv.innerText += `${payRate * weekendOT}...................................................................................................\n`;
     amountDiv.innerText += `${rounded(milageOTUnits * payRate * weekdayOT)}\n`;
   }
 
@@ -1440,6 +1489,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     unitDiv.innerText += ` ${rounded(
       hours
     )}: ...........................................................................................................................................\n`;
+    rateDiv.innerText += `${payRate * weekendOT}...................................................................................................\n`;
     amountDiv.innerText += ` ${rounded(hours * payRate * weekendOT)}  \n`;
 
     //CALCULATE ORDINARY TIME
@@ -1459,6 +1509,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     unitDiv.innerText += ` ${rounded(
       hours
     )}: .............................................................................................................................\n`;
+    rateDiv.innerText += `${payRate * weekdayOT}...................................................................................................\n`;
     amountDiv.innerText += `${rounded(hours * payRate * weekdayOT)} \n`;
     //CALCULATE ORDINARY TIME
     //@150% its half the OT time
@@ -1484,6 +1535,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     unitDiv.innerText += `  ${rounded(
       hours
     )}: ...........................................................................................................................\n`;
+    rateDiv.innerText += `${payRate}...................................................................................................\n`;
     amountDiv.innerText += ` ${rounded(hours * payRate)}\n`;
   }
 

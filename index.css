@@ -160,10 +160,10 @@ h1 {
   justify-content: center;
 }
 #payDetails {
-    flex: 1;
+    flex: 0.85;
     display: inline-block;
     text-align: left;
-    max-width: 450px;
+    max-width: 300px;
     text-overflow: clip;
     white-space: nowrap;
     overflow:hidden;
@@ -174,11 +174,22 @@ h1 {
   flex: 0.25;
   display: inline-block;
   text-align: left;
-  max-width: 200px;
+  max-width: 100px;
   text-overflow: clip;
   white-space: nowrap;
   overflow:hidden;
   background-color: #f2f2f2c0;
+}
+
+#rateDetails {
+  padding-left: 5px;
+flex: 0.25;
+display: inline-block;
+text-align: left;
+max-width: 100px;
+text-overflow: clip;
+white-space: nowrap;
+overflow:hidden;
 }
 
 
@@ -187,8 +198,9 @@ h1 {
 flex: 0.25;
 display: inline-block;
 text-align: left;
-max-width: 200px;
+max-width: 100px;
 text-overflow: clip;
 white-space: nowrap;
 overflow:hidden;
+background-color: #f2f2f2c0;
 }
