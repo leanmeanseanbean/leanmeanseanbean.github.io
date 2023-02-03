@@ -430,35 +430,11 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                 ) {
                   NormalPay(shiftLength);
                   MilagePayment(milageOTUnits);
-                  // //milage eg 7'30"
-                  // dailyPayArray.push(rounded(shiftLength * payRate));
-                  // //milage payment @ 150%
-                  // dailyPayArray.push(
-                  //   rounded(milageOTUnits * payRate * weekdayOT)
-                  // );
-                  // payDiv.innerText += ` Ordinary Hours: ............................................................................................\n`;
-                  // unitDiv.innerText += ` ${shiftLength}: ................................................................................................................................... \n`;
-                  // amountDiv.innerText += ` ${rounded(shiftLength * payRate)}\n`;
-                  // payDiv.innerText += `  Milage payment 209k's:  ..................................................................................\n`;
-                  // unitDiv.innerText += `  ${milageOTUnits}: ................................................................................................................................... \n`;
-                  // amountDiv.innerText += ` ${rounded(
-                  //   milageOTUnits * payRate * weekdayOT
-                  // )}  \n`;
+
                   //excess is 150% on weekdays eg - 30" + any LU LB BU etc
                   if (BU + LU + LB + extraKmAsUnits > 0) {
                     OneHalfOT(BU + LU + LB + extraKmAsUnits);
-                    // dailyPayArray.push(
-                    //   rounded(
-                    //     (BU + LU + LB + extraKmAsUnits) * payRate * weekdayOT
-                    //   )
-                    // );
-                    // payDiv.innerText += `  Sched OT 150%:   ..................................................................................\n`;
-                    // unitDiv.innerText += `   ${rounded(
-                    //   BU + LU + LB + extraKmAsUnits
-                    // )}: ................................................................................................................................... \n`;
-                    // amountDiv.innerText += `${rounded(
-                    //   (BU + LU + LB + extraKmAsUnits) * payRate * weekdayOT
-                    // )}   \n`;
+
                   }
                 }
                 // saturday or weekday ph - 150% to 8 hours, over 8 OT is 200%
@@ -470,37 +446,11 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                 ) {
                   NormalPay(shiftLength);
                   MilagePayment(milageOTUnits);
-                  //milage eg 7'30"
-                  // dailyPayArray.push(rounded(shiftLength * payRate));
-                  // //excess is 150%  up to 8 hours as eg - 30" + any LU LB BU etc
-                  // dailyPayArray.push(
-                  //   rounded(milageOTUnits * payRate * weekdayOT)
-                  // );
-                  // // ADD A LOADING FOR SATURDAY OR PUBLIC HOLIDAY
-                  // payDiv.innerText += `Ordinary Hours:  ..................................................................................\n`;
-                  // unitDiv.innerText += `  ${shiftLength}: ................................................................................................................................... \n`;
-                  // amountDiv.innerText += ` ${rounded(shiftLength * payRate)}\n`;
-                  // payDiv.innerText += ` Milage payment 209k's: ..................................................................................\n`;
-                  // unitDiv.innerText += ` ${milageOTUnits}: ................................................................................................................................... \n`;
-                  // amountDiv.innerText += `${rounded(
-                  //   milageOTUnits * payRate * weekdayOT
-                  // )}\n`;
 
                   // excess over 8 hours is 200%
                   if (BU + LU + LB + extraKmAsUnits > 0) {
                     DoubleOT(BU + LU + LB + extraKmAsUnits);
-                    // dailyPayArray.push(
-                    //   rounded(
-                    //     (BU + LU + LB + extraKmAsUnits) * payRate * weekendOT
-                    //   )
-                    // );
-                    // payDiv.innerText += ` Sched OT 200%: .........................................................................................\n`;
-                    // unitDiv.innerText += `${rounded(
-                    //   BU + LU + LB + extraKmAsUnits
-                    // )}: ................................................................................................................................\n`;
-                    // amountDiv.innerText += `${rounded(
-                    //   (BU + LU + LB + extraKmAsUnits) * payRate * weekendOT
-                    // )}\n`;
+
                   }
                 }
                 // sat PH = 200% max, sunday = 200% max
@@ -510,30 +460,10 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                 ) {
                   //milage eg 7'30"
                   NormalPay(shiftLength);
-                  // dailyPayArray.push(rounded(shiftLength * payRate));
-
-                  // payDiv.innerText += ` Ordinary Hours: ....................................................................................................\n`;
-                  // unitDiv.innerText += `  ${shiftLength}: ...........................................................................................................................\n`;
-                  // amountDiv.innerText += ` ${rounded(shiftLength * payRate)}\n`;
 
                   // excess is 200%
                   DoubleOT(milageOTUnits + BU + LU + LB + extraKmAsUnits);
-                  // dailyPayArray.push(
-                  //   rounded(
-                  //     (milageOTUnits + BU + LU + LB + extraKmAsUnits) *
-                  //       payRate *
-                  //       weekendOT
-                  //   )
-                  // );
-                  // payDiv.innerText += ` Sched OT 200%: ......................................................................................\n`;
-                  // unitDiv.innerText += `${rounded(
-                  //   milageOTUnits + BU + LU + LB + extraKmAsUnits
-                  // )}: ..........................................................................................................................\n`;
-                  // amountDiv.innerText += `${rounded(
-                  //   (milageOTUnits + BU + LU + LB + extraKmAsUnits) *
-                  //     payRate *
-                  //     weekendOT
-                  // )}\n`;
+      
                 }
               }
               //no milage
@@ -545,127 +475,17 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                   !publicHoliday
                 ) {
                   NormalPay(shiftLength);
-                  // //milage eg 7'30"
-                  // dailyPayArray.push(rounded(shiftLength * payRate));
-
-                  // payDiv.innerText += ` Ordinary Hours: ....................................................................................................\n`;
-                  // unitDiv.innerText += `  ${shiftLength}: .............................................................................................................\n`;
-                  // amountDiv.innerText += ` ${rounded(shiftLength * payRate)}\n`;
-
+          
                   //excess is 150% on weekdays eg - 30" + any LU LB BU etc
                   OneHalfOT(
                     dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits
                   );
-                  // dailyPayArray.push(
-                  //   rounded(
-                  //     (dailyUnits -
-                  //       shiftLength +
-                  //       BU +
-                  //       LU +
-                  //       LB +
-                  //       extraKmAsUnits) *
-                  //       payRate *
-                  //       weekdayOT
-                  //   )
-                  // );
-                  // payDiv.innerText += ` Sched OT 150%: ......................................................................................\n`;
-                  // unitDiv.innerText += `${rounded(
-                  //   dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits
-                  // )}: ...........................................................................................................................\n`;
-                  // amountDiv.innerText += `${rounded(
-                  //   (dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits) *
-                  //     payRate *
-                  //     weekdayOT
-                  // )}\n`;
                 } else {
                   NormalPay(shiftLength);
                   DoubleOT(
                     dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits
                   );
                 }
-                // saturday or weekday ph - 150% to 8 hours, over 8 OT is 200%
-                // if (
-                //   weekdays[i] === "Saturday" && !publicHoliday||
-                //   (weekdays[i] !== "Sunday" &&
-                //     weekdays[i] !== "Saturday" &&
-                //     publicHoliday)
-                // ) {
-                //   //milage eg 7'30"
-                //   NormalPay(shiftLength);
-                //   // dailyPayArray.push(rounded(shiftLength * payRate));
-
-                //   // // ADD A LOADING FOR SATURDAY OR PUBLIC HOLIDAY
-                //   // payDiv.innerText += ` Ordinary Hours: ......................................................................................\n`;
-                //   // unitDiv.innerText += `  ${shiftLength}: .............................................................................................................\n`;
-                //   // amountDiv.innerText += ` ${rounded(shiftLength * payRate)}\n`;
-
-                //   // excess over 8 hours is 200%
-                //   DoubleOT(
-                //     dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits
-                //   );
-                //   // dailyPayArray.push(
-                //   //   rounded(
-                //   //     (dailyUnits -
-                //   //       shiftLength +
-                //   //       BU +
-                //   //       LU +
-                //   //       LB +
-                //   //       extraKmAsUnits) *
-                //   //       payRate *
-                //   //       weekendOT
-                //   //   )
-                //   // );
-                //   // payDiv.innerText += ` Sched OT 200%: ......................................................................................\n`;
-                //   // unitDiv.innerText += `${rounded(
-                //   //   dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits
-                //   // )}: ...........................................................................................................................\n`;
-                //   // amountDiv.innerText += `${rounded(
-                //   //   (dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits) *
-                //   //     payRate *
-                //   //     weekendOT
-                //   // )}\n`;
-                // }
-                // // sat PH = 200% max, sunday = 200% max
-                // if (
-                //   weekdays[i] === "Sunday" ||
-                //   (weekdays[i] === "Saturday" && publicHoliday)
-                // ) {
-                //   //milage eg 7'30"
-                //   NormalPay(shiftLength);
-                //   // dailyPayArray.push(rounded(shiftLength * payRate));
-
-                //   // payDiv.innerText += ` Ordinary Hours: ......................................................................................\n`;
-                //   // unitDiv.innerText += `  ${shiftLength}: .............................................................................................................\n`;
-                //   // amountDiv.innerText += ` ${rounded(shiftLength * payRate)}\n`;
-                //   DoubleOT((dailyUnits -
-                //     shiftLength +
-                //     BU +
-                //     LU +
-                //     LB +
-                //     extraKmAsUnits));
-                //   // // excess is 200%
-                //   // dailyPayArray.push(
-                //   //   rounded(
-                //   //     (dailyUnits -
-                //   //       shiftLength +
-                //   //       BU +
-                //   //       LU +
-                //   //       LB +
-                //   //       extraKmAsUnits) *
-                //   //       payRate *
-                //   //       weekendOT
-                //   //   )
-                //   // );
-                //   // payDiv.innerText += ` Sched OT 200%: ......................................................................................\n`;
-                //   // unitDiv.innerText += `${rounded(
-                //   //   dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits
-                //   // )}: ...........................................................................................................................\n`;
-                //   // amountDiv.innerText += `${rounded(
-                //   //   (dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits) *
-                //   //     payRate *
-                //   //     weekendOT
-                //   // )}\n`;
-                // }
               }
               if (
                 callOut &&
@@ -868,6 +688,12 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                   afternoonPenalty(shiftStartUnits);
                   nightPenalty(shiftStartUnits);
                   PHweekday(shiftFinishUnits);
+                }
+                if(shiftDayFinish === "Saturday" && !dayAfterPH){
+                  morningPenalty(shiftStartUnits);
+                  afternoonPenalty(shiftStartUnits);
+                  nightPenalty(shiftStartUnits);
+                  specialLoadingPenalty();
                 }
               } //if public holiday and finishes on a saturday
               if (publicHoliday && shiftDayFinish === "Saturday") {
