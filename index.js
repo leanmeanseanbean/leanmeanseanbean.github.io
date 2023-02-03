@@ -940,7 +940,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     if (Math.round(hours) >= 8) {
       hours = 8;
     }
-    if (startTimeActual < 18 && finishTimeActual > 18) {
+    if (startTimeActual < 18 && finishTimeActual > 18 || startTimeActual < 18 && finishTimeActual < startTimeActual && (finishTimeActual + 24) > 18) {
       dailyPayArray.push(Math.round(hours) * AfternoonShiftPenalty);
       payDiv.innerText += `Afternoon Shift Dvrs/Grds Hrl: ......................................................................................\n`;
       unitDiv.innerText += `${Math.round(hours)}: .................................................................................................................\n`;
