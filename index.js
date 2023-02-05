@@ -221,10 +221,12 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
         startTimeActual = timeAsUnits[i][1];
         finishTimeRostered = timeAsUnits[i][2];
         finishTimeActual = timeAsUnits[i][3];
-        shiftDay = timeAsUnits[i][5][1];
-        shiftDayFinish = timeAsUnits[i][6][1];
-        shiftStartUnits = timeAsUnits[i][5][0];
-        shiftFinishUnits = timeAsUnits[i][6][0];
+        shiftDay = weekdays[i];
+        if(timeAsUnits[i][1] !== "Sick"){
+          shiftDayFinish = timeAsUnits[i][6][1];
+          shiftStartUnits = timeAsUnits[i][5][0];
+          shiftFinishUnits = timeAsUnits[i][6][0];
+        }
 
         if (
           //IF THERE IS MILAGE ADD THE TIMES
@@ -240,6 +242,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
           offsetUnits += milageOTUnits;
           milageShift = true;
         }
+        if(timeAsUnits[i][1] !== "Sick"){
         // IF THE DAY THE SHIFT STARTS AND FINISHES ARENT THE SAME, MULTI DAY SHIFT
         if (timeAsUnits[i][5][1] !== timeAsUnits[i][6][1]) {
           singleDay = false;
@@ -252,10 +255,14 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
               dayAfterPH = true;
             }
           }
-        } // CALCULATE ORDINARY TIME FOR 9/10 DAYS IN FORTNIGHT
+        } 
+      }
+        // CALCULATE ORDINARY TIME FOR 9/10 DAYS IN FORTNIGHT
         if (daysWorkedCounter <= ordinaryDays) {
-          ordinaryUnits += dailyUnits;
-          // console.log("normal hours: " + ordinaryUnits + " - " + dailyUnits);
+          if(dailyUnits > 0){
+            ordinaryUnits += dailyUnits;
+            // console.log("normal hours: " + ordinaryUnits + " - " + dailyUnits);
+          }
         }
       }
 
@@ -1068,12 +1075,16 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       // );
       payArray.push(0);
     } else {
-      shortFall = rounded(baseHours - timeLost - ordinaryUnits - offsetUnits);
+      shortFall = rounded(baseHours + timeLost - ordinaryUnits - offsetUnits);
+      // console.log(`ordinary units: ${ordinaryUnits}`);
+      // console.log(`Offset Units: ${offsetUnits}`);
+      // console.log(`TimeLost: ${timeLost}`);
+      // console.log(`shortfall: ${shortFall}`);
       // console.log(
       //   `worked hours: ${rounded(
       //     ordinaryUnits + offsetUnits
       //   )}.  Base hours: ${baseHours} - Time Lost: ${timeLost} = ${
-      //     baseHours - timeLost
+      //     baseHours + timeLost
       //   }.  Guarantee payment: ${rounded(
       //     shortFall * payRate
       //   )} for ${shortFall} hours shortfall!`
