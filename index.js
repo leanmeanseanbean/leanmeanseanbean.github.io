@@ -932,7 +932,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       payDiv.innerText += ` Morning Shift Dvrs/Grds Hrl: ......................................................................................\n`;
       unitDiv.innerText += `${Math.round(hours)}: ...................................................................................................\n`;
       rateDiv.innerText += `${EarlyMorningShiftPenalty}...................................................................................................\n`;
-      amountDiv.innerText += `${Math.round(hours) * EarlyMorningShiftPenalty}\n`;
+      amountDiv.innerText += `${rounded(Math.round(hours) * EarlyMorningShiftPenalty)}\n`;
     }
   }
 
@@ -945,7 +945,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       payDiv.innerText += `Afternoon Shift Dvrs/Grds Hrl: ......................................................................................\n`;
       unitDiv.innerText += `${Math.round(hours)}: .................................................................................................................\n`;
       rateDiv.innerText += `${AfternoonShiftPenalty}...................................................................................................\n`;
-      amountDiv.innerText += `${Math.round(hours) * AfternoonShiftPenalty}\n`;
+      amountDiv.innerText += `${rounded(Math.round(hours) * AfternoonShiftPenalty)}\n`;
     }
   }
 
@@ -958,7 +958,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       payDiv.innerText += `Night Shift Dvrs/Grds Hrl: ......................................................................................\n`;
       unitDiv.innerText += `${Math.round(hours)}: .................................................................................................................\n`;
       rateDiv.innerText += `${nightShiftPenalty}...................................................................................................\n`;
-      amountDiv.innerText += `${Math.round(hours) * nightShiftPenalty}\n`;
+      amountDiv.innerText += `${rounded(Math.round(hours) * nightShiftPenalty)}\n`;
     }
   }
 
