@@ -699,7 +699,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
               if (publicHoliday && shiftDayFinish === "Saturday") {
                 saturdayLoading(shiftFinishUnits);
               }
-              if (publicHoliday && shiftDayFinish !== "Saturday") {
+              if (publicHoliday && shiftDayFinish !== "Saturday" && !dayAfterPH) {
                 morningPenalty(shiftFinishUnits);
                 nightPenalty(shiftFinishUnits);
                 afternoonPenalty(shiftFinishUnits);
@@ -1395,26 +1395,13 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
   function ShiftPay(hours) {
     if (daysWorkedCounter <= ordinaryDays) {
       if (hours <= 8) {
-        //hours * payRate
-        // dailyPayArray.push(rounded(hours * payRate));
-        // //print the details
-        // payDiv.innerText += ` Ordinary Hours: ................................................................................................\n`;
-        // unitDiv.innerText += `${rounded(
-        //   hours
-        // )}: ................................................................................................................................................. \n`;
-        // amountDiv.innerText += ` ${rounded(hours * payRate)}  \n`;
         NormalPay(hours);
-
         if (callOut && shiftDay !== "Saturday" && shiftDay !== "Sunday") {
           ApplyCallOut(hours);
         }
       }
       if (hours > 8) {
         NormalPay(hours);
-        // dailyPayArray.push(rounded(shiftLength * payRate));
-        // payDiv.innerText += ` Ordinary Hours: ....................................................................................................\n`;
-        // unitDiv.innerText += ` ${shiftLength}: ...........................................................................................................................\n`;
-        // amountDiv.innerText += ` ${rounded(shiftLength * payRate)}  \n`;
         if (shiftDay === "Saturday" || shiftDay === "Sunday" || publicHoliday) {
           DoubleOT(hours - shiftLength);
         }
@@ -1432,20 +1419,6 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
         }
       }
     }
-    // if (daysWorkedCounter > ordinaryDays) {
-    //   if (daysWorked <= ordinaryDays + 2) {
-    //     if (hours <= 11) {
-    //       //hours * payRate * 1.5
-    //     }
-    //     if (hours > 11) {
-    //       //8 * payRate * 1.5
-    //       //hours - 8 * payRate * 2
-    //     }
-    //   }
-    //   if (daysWorked >= ordinaryDays + 3) {
-    //     //hours * payRate * 2
-    //   }
-    // }
   }
 };
 
