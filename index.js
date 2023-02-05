@@ -152,8 +152,8 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
 
   //calculate hours and minutes worked
   timeAsUnits = calculateTimeWorkedAsUnits(tableArray);
-  console.log(tableArray);
-  console.log(timeAsUnits);
+  // console.log(tableArray);
+  // console.log(timeAsUnits);
   if (adoWeek === "long") {
     baseHours = longWeekHours;
     ordinaryDays = longWeekDays;
@@ -255,7 +255,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
         } // CALCULATE ORDINARY TIME FOR 9/10 DAYS IN FORTNIGHT
         if (daysWorkedCounter <= ordinaryDays) {
           ordinaryUnits += dailyUnits;
-          console.log("normal hours: " + ordinaryUnits + " - " + dailyUnits);
+          // console.log("normal hours: " + ordinaryUnits + " - " + dailyUnits);
         }
       }
 
@@ -283,7 +283,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
           offsetUnits += BU;
           if (daysWorkedCounter <= ordinaryDays) {
             ordinaryUnits += BU;
-            console.log("BU: " + ordinaryUnits + " - " + BU);
+            // console.log("BU: " + ordinaryUnits + " - " + BU);
           }
         }
         //liftup
@@ -293,7 +293,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
           offsetUnits += LU;
           if (daysWorkedCounter <= ordinaryDays) {
             ordinaryUnits += LU;
-            console.log("LU: " + ordinaryUnits + " - " + LU);
+            // console.log("LU: " + ordinaryUnits + " - " + LU);
           }
         }
         //layback
@@ -303,7 +303,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
           offsetUnits += LB;
           if (daysWorkedCounter <= ordinaryDays) {
             ordinaryUnits += LB;
-            console.log("LB: " + ordinaryUnits + " - " + LB);
+            // console.log("LB: " + ordinaryUnits + " - " + LB);
           }
         }
 
@@ -836,13 +836,13 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
         cabAllowance();
         PHWorkAccrue();
         //print working time and running total
-        console.log(
-          daysWorkedCounter +
-            `: daily Units: ` +
-            rounded(dailyUnits + BU + LU + LB) +
-            `||  total Units: ` +
-            rounded(ordinaryUnits)
-        );
+        // console.log(
+        //   daysWorkedCounter +
+        //     `: daily Units: ` +
+        //     rounded(dailyUnits + BU + LU + LB) +
+        //     `||  total Units: ` +
+        //     rounded(ordinaryUnits)
+        // );
       } else {
         //SICK
         //WHAT HAPPENS TO PUBLIC HOLIDAY IF SICK??????
@@ -880,7 +880,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     // IF IT IS A DAY OFF
     else {
       dailyPayArray = [];
-      console.log("day off");
+      // console.log("day off");
       payDiv.innerText += ` \n${weekdays[i]}:  DAY OFF\n`;
       unitDiv.innerText += ` \n\n`;
       rateDiv.innerText += `\n\n`;
@@ -917,7 +917,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     }
   }
   GrossPay += shortFall * payRate;
-  console.log(GrossPay);
+  // console.log(GrossPay);
   payDiv.innerText += ` \n Gross Pay:\n`;
   unitDiv.innerText += ` \n\n`;
   rateDiv.innerText += `\n\n`;
@@ -985,11 +985,11 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       wobodArray.forEach((wobodShift) => {
         let co = wobodShift[2];
         if (!co) {
-          console.log(
-            `wobod payment next fortnite at 48% of ${
-              wobodShift[0]
-            }'s shift: ${rounded(wobodShift[1] * payRate * WOBOD)}`
-          );
+          // console.log(
+          //   `wobod payment next fortnite at 48% of ${
+          //     wobodShift[0]
+          //   }'s shift: ${rounded(wobodShift[1] * payRate * WOBOD)}`
+          // );
           payDiv.innerText += `\nNEXT FORTNIGHT WOBOD PAYMENT: ...............................................................................................................................\n`;
           unitDiv.innerText += ` \n@${wobodShift[0]}......................................................................................................................................................\n`;
           rateDiv.innerText += `\n48%...................................................................................................\n`;
@@ -999,11 +999,11 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
         }
         // with callout - wobod = 23%
         else {
-          console.log(
-            `wobod payment next fortnite at 23% of ${
-              wobodShift[0]
-            }'s shift: ${rounded(wobodShift[1] * payRate * 0.23)}`
-          );
+          // console.log(
+          //   `wobod payment next fortnite at 23% of ${
+          //     wobodShift[0]
+          //   }'s shift: ${rounded(wobodShift[1] * payRate * 0.23)}`
+          // );
           payDiv.innerText += `\nNEXT FORTNIGHT WOBOD PAYMENT: ...............................................................................................................................\n`;
           unitDiv.innerText += ` \n@${wobodShift[0]}......................................................................................................................................................\n`;
           rateDiv.innerText += `\n23%...................................................................................................\n`;
@@ -1020,11 +1020,11 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
       if (OTdays - sickDays > 0 && OTdays - sickDays < 4) {
         for (let i = 0; i < bonusOtShifts.length; i++) {
           if (OTdays === bonusOtShifts[i]) {
-            console.log(
-              `Overtime Days: ${OTdays} - Days Sick: ${sickDays} = ${
-                OTdays - sickDays
-              }. OT Bonus = ${bonusOtRates[i]}`
-            );
+            // console.log(
+            //   `Overtime Days: ${OTdays} - Days Sick: ${sickDays} = ${
+            //     OTdays - sickDays
+            //   }. OT Bonus = ${bonusOtRates[i]}`
+            // );
             payDiv.innerText += `Overtime Days: ${OTdays} - Days Sick: ${sickDays} =...............................................................................................................................\n`;
             unitDiv.innerText += ` \n${
               OTdays - sickDays
@@ -1034,11 +1034,11 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
           }
         }
       } else if (OTdays - sickDays >= 4) {
-        console.log(
-          `Overtime Days: ${OTdays} - Days Sick: ${sickDays} = ${
-            OTdays - sickDays
-          }. OT Bonus = ${bonusOtRates[2]}`
-        );
+        // console.log(
+        //   `Overtime Days: ${OTdays} - Days Sick: ${sickDays} = ${
+        //     OTdays - sickDays
+        //   }. OT Bonus = ${bonusOtRates[2]}`
+        // );
         payDiv.innerText += `Overtime Days: ${OTdays} - Days Sick: ${sickDays} =...............................................................................................................................\n`;
         unitDiv.innerText += ` \n${
           OTdays - sickDays
@@ -1046,11 +1046,11 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
         rateDiv.innerText += `\n${bonusOTRates[2]}...................................................................................................\n`;
         amountDiv.innerText += ` \n${bonusOtRates[2]}\n`;
       } else {
-        console.log(
-          `Overtime Days: ${OTdays} - Days Sick: ${sickDays} = ${
-            OTdays - sickDays
-          }. OT Bonus = $0.00`
-        );
+        // console.log(
+        //   `Overtime Days: ${OTdays} - Days Sick: ${sickDays} = ${
+        //     OTdays - sickDays
+        //   }. OT Bonus = $0.00`
+        // );
       }
     }
   }
@@ -1058,25 +1058,25 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
   function guaranteePayment() {
     if (ordinaryUnits + offsetUnits >= baseHours - timeLost) {
       //shortfall is the units
-      console.log(
-        `worked hours: ${rounded(
-          ordinaryUnits + offsetUnits
-        )}.  Base hours: ${baseHours} - Time Lost: ${timeLost} = ${
-          baseHours - timeLost
-        }  Guarantee payment: None!`
-      );
+      // console.log(
+      //   `worked hours: ${rounded(
+      //     ordinaryUnits + offsetUnits
+      //   )}.  Base hours: ${baseHours} - Time Lost: ${timeLost} = ${
+      //     baseHours - timeLost
+      //   }  Guarantee payment: None!`
+      // );
       payArray.push(0);
     } else {
       shortFall = rounded(baseHours - timeLost - ordinaryUnits - offsetUnits);
-      console.log(
-        `worked hours: ${rounded(
-          ordinaryUnits + offsetUnits
-        )}.  Base hours: ${baseHours} - Time Lost: ${timeLost} = ${
-          baseHours - timeLost
-        }.  Guarantee payment: ${rounded(
-          shortFall * payRate
-        )} for ${shortFall} hours shortfall!`
-      );
+      // console.log(
+      //   `worked hours: ${rounded(
+      //     ordinaryUnits + offsetUnits
+      //   )}.  Base hours: ${baseHours} - Time Lost: ${timeLost} = ${
+      //     baseHours - timeLost
+      //   }.  Guarantee payment: ${rounded(
+      //     shortFall * payRate
+      //   )} for ${shortFall} hours shortfall!`
+      // );
       payArray.push(rounded(shortFall * payRate));
       payDiv.innerText += ` \nGuarantee: ...............................................................................................................................\n`;
       unitDiv.innerText += ` \n${shortFall}: ......................................................................................................................................................\n`;
@@ -1112,9 +1112,9 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     }
     // accrue public holiday, doesnt get paid.
     if (accruePh) {
-      console.log(
-        "public holiday accrued up to 8 a year + 1 non proclaimed PH aka picnic day"
-      );
+      // console.log(
+      //   "public holiday accrued up to 8 a year + 1 non proclaimed PH aka picnic day"
+      // );
       payDiv.innerText += ` Public Holiday Accrued  \n`;
       unitDiv.innerText += `8\n`;
       rateDiv.innerText += `\n`;
@@ -1123,7 +1123,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
   }
 
   function HOLpayment() {
-    console.log(`HOL - public holiday not required`);
+    // console.log(`HOL - public holiday not required`);
     dailyPayArray.push(rounded(shiftLength * payRate));
 
     payDiv.innerText += `HOL: ............................................................................................................................................................\n`;
@@ -1133,16 +1133,16 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
 
     if (daysWorkedCounter <= ordinaryDays) {
       ordinaryUnits += rounded(shiftLength);
-      console.log(
-        "OT@200%: " + rounded(ordinaryUnits) + " - " + rounded(shiftLength)
-      );
+    //   console.log(
+    //     "OT@200%: " + rounded(ordinaryUnits) + " - " + rounded(shiftLength)
+    //   );
     }
   }
 
   function sickDay() {
     timeLost += dailyUnits;
     sickDays++;
-    console.log(`sick day - lost ${dailyUnits} of ordinary Time`);
+    // console.log(`sick day - lost ${dailyUnits} of ordinary Time`);
     dailyPayArray.push(rounded(shiftLength * payRate));
 
     payDiv.innerText += `Sick: ..............................................................................................................................................\n`;
@@ -1322,9 +1322,9 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     //@200% its equal in 1:1 ratio
     if (daysWorkedCounter <= ordinaryDays) {
       ordinaryUnits += rounded(hours);
-      console.log(
-        "OT@200%: " + rounded(ordinaryUnits) + " - " + rounded(hours)
-      );
+      // console.log(
+      //   "OT@200%: " + rounded(ordinaryUnits) + " - " + rounded(hours)
+      // );
     }
   }
 
@@ -1341,9 +1341,9 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     //@150% its half the OT time
     if (daysWorkedCounter <= ordinaryDays) {
       ordinaryUnits += rounded(hours / 2);
-      console.log(
-        "OT@100%: " + rounded(ordinaryUnits) + " - " + rounded(hours / 2)
-      );
+      // console.log(
+      //   "OT@100%: " + rounded(ordinaryUnits) + " - " + rounded(hours / 2)
+      // );
     }
   }
 
