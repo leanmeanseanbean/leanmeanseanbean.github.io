@@ -719,6 +719,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                 }
                 if (shiftDayFinish === "Saturday") {
                   ApplyCallOut(shiftStartUnits);
+                  saturdayLoading(shiftFinishUnits);
                 }
               }
               if (publicHoliday) {
