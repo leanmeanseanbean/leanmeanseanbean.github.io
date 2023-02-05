@@ -694,6 +694,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                   afternoonPenalty(shiftStartUnits);
                   nightPenalty(shiftStartUnits);
                   specialLoadingPenalty();
+                  saturdayLoading(shiftFinishUnits);
                 }
               } //if public holiday and finishes on a saturday
               if (publicHoliday && shiftDayFinish === "Saturday") {
