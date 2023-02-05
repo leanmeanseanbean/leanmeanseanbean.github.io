@@ -221,7 +221,8 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
         startTimeActual = timeAsUnits[i][1];
         finishTimeRostered = timeAsUnits[i][2];
         finishTimeActual = timeAsUnits[i][3];
-        shiftDay = weekdays[i];
+        shiftDay = weekdays[i]; 
+        console.log(shiftDay);
         if(timeAsUnits[i][1] !== "Sick"){
           shiftDayFinish = timeAsUnits[i][6][1];
           shiftStartUnits = timeAsUnits[i][5][0];
