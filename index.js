@@ -1203,18 +1203,18 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
   }
 
   function PHsunday(hours) {
-    if (rounded(hours) >= shiftLength) {
+    if (Math.round(hours) >= shiftLength) {
       hours = shiftLength;
     }
-    dailyPayArray.push(rounded(hours * payRate * sunLoading));
+    dailyPayArray.push(rounded(Math.round(hours) * payRate * sunLoading));
     payDiv.innerText += ` PH Loading @ 100%: ......................................................................................\n`;
-    unitDiv.innerText += `${hours}: .................................................................................................................\n`;
+    unitDiv.innerText += `${Math.round(hours)}: .................................................................................................................\n`;
     rateDiv.innerText += `${payRate * sunLoading}...................................................................................................\n`;
-    amountDiv.innerText += `${rounded(hours * payRate * sunLoading)}\n`;
+    amountDiv.innerText += `${rounded(Math.round(hours) * payRate * sunLoading)}\n`;
   }
 
   function saturdayLoading(hours) {
-    if (rounded(hours) >= shiftLength) {
+    if (rounded(Math.round(hours)) >= shiftLength) {
       hours = shiftLength;
     }
     dailyPayArray.push(rounded(Math.round(hours) * payRate * satLoading));
@@ -1229,7 +1229,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
   }
 
   function sundayLoading(hours) {
-    if (rounded(hours) >= shiftLength) {
+    if (rounded(Math.round(hours)) >= shiftLength) {
       hours = shiftLength;
     }
     dailyPayArray.push(rounded(Math.round(hours) * payRate * sunLoading));
