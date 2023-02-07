@@ -706,20 +706,38 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                 }
               } //if public holiday and finishes on a saturday
               if (publicHoliday && shiftDayFinish === "Saturday") {
-                saturdayLoading(shiftFinishUnits);
+                if(dailyUnits < 8.5){
+                  saturdayLoading(shiftFinishUnits);
+                }
+                else if(dailyUnits >= 8.5){
+                  saturdayLoading(shiftLength - Math.round(shiftStartUnits));
+                }
               }
               if (publicHoliday && shiftDayFinish !== "Saturday" && !dayAfterPH) {
+                if(dailyUnits < 8.5){
                 morningPenalty(shiftFinishUnits);
                 nightPenalty(shiftFinishUnits);
                 afternoonPenalty(shiftFinishUnits);
+                }
+                if(dailyUnits >= 8.5){
+                morningPenalty(shiftLength - Math.round(shiftStartUnits));
+                nightPenalty(shiftLength - Math.round(shiftStartUnits));
+                afternoonPenalty(shiftLength - Math.round(shiftStartUnits));
+                }
               }
               if (callOut) {
                 if (shiftDayFinish !== "Saturday") {
                   ApplyCallOut(dailyUnits);
                 }
                 if (shiftDayFinish === "Saturday") {
-                  ApplyCallOut(shiftStartUnits);
-                  saturdayLoading(shiftFinishUnits);
+                  if(dailyUnits < 8.5){
+                    ApplyCallOut(shiftStartUnits);
+                    saturdayLoading(shiftFinishUnits);
+                  }
+                  if(dailyUnits >= 8.5){
+                    ApplyCallOut(shiftStartUnits);
+                    saturdayLoading(shiftLength - Math.round(shiftStartUnits));
+                  }
                 }
               }
               if (publicHoliday) {
@@ -761,10 +779,20 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                 saturdayLoading(shiftStartUnits);
                 // if finish day is non PH sunday, add sunday loading
                 if (!dayAfterPH) {
-                  sundayLoading(shiftFinishUnits);
+                  if(dailyUnits < 8.5){
+                    sundayLoading(shiftFinishUnits);
+                  }
+                  if(dailyUnits >= 8.5){
+                    sundayLoading(shiftLength - Math.round(shiftStartUnits));
+                  }
                 }
                 if (dayAfterPH) {
-                  PHsunday(shiftFinishUnits)
+                  if(dailyUnits < 8.5){
+                    PHsunday(shiftFinishUnits)
+                  }
+                  if(dailyUnits >= 8.5){
+                    PHsunday(shiftLength - Math.round(shiftStartUnits));
+                  }
                 }
               }
               // public holiday loading
@@ -774,8 +802,14 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                   PHsunday(dailyUnits);
                 }
                 if(!dayAfterPH){
+                  if(dailyUnits < 8.5){
                   PHsunday(shiftStartUnits);
                   sundayLoading(shiftFinishUnits);
+                  }
+                  if(dailyUnits >= 8.5){
+                    PHsunday(shiftStartUnits);
+                  sundayLoading(shiftLength - Math.round(shiftStartUnits));
+                  }
                 }
               }
             }
@@ -817,12 +851,24 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
               if (!publicHoliday) {
                 sundayLoading(shiftStartUnits);
                 if (!dayAfterPH) {
-                  afternoonPenalty(shiftFinishUnits);
-                  nightPenalty(shiftFinishUnits);
+                  if(dailyUnits < 8.5){
+                    afternoonPenalty(shiftFinishUnits);
+                    nightPenalty(shiftFinishUnits);
+                  }
+                  if(dailyUnits >= 8.5){
+                    afternoonPenalty(shiftLength - Math.round(shiftStartUnits));
+                    nightPenalty(shiftLength - Math.round(shiftStartUnits));
+                  }
                   specialLoadingPenalty();
                 }
                 if (dayAfterPH) {
                   PHweekday(shiftFinishUnits);
+                  if(dailyUnits < 8.5){
+                    PHweekday(shiftFinishUnits);
+                  }
+                  if(dailyUnits >= 8.5){
+                    PHweekday(shiftLength - Math.round(shiftStartUnits));
+                  }
                 }
               }
 
@@ -831,11 +877,22 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
                 PHsunday(shiftStartUnits);
                 // weekend PH is 100%
                 if (dayAfterPH) {
-                  PHweekday(shiftFinishUnits);
+                  if(dailyUnits < 8.5){
+                    PHweekday(shiftFinishUnits);
+                  }
+                  if(dailyUnits >= 8.5){
+                    PHweekday(shiftLength - Math.round(shiftStartUnits));
+                  }
                 }
                 if(!dayAfterPH){
-                  afternoonPenalty(shiftFinishUnits);
+                  if(dailyUnits < 8.5){
+                    afternoonPenalty(shiftFinishUnits);
                   nightPenalty(shiftFinishUnits);
+                  }
+                  if(dailyUnits >= 8.5){
+                    afternoonPenalty(shiftLength - Math.round(shiftStartUnits));
+                  nightPenalty(shiftLength - Math.round(shiftStartUnits));
+                  }
                   specialLoadingPenalty();
                 }
               }
