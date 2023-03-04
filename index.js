@@ -899,8 +899,9 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
             }
           }
         }
-        securityAllownace();
-        cabAllowance();
+        // THERE IS NO MORE SECURITY OR CAB
+        // securityAllownace();
+        // cabAllowance();
         PHWorkAccrue();
         //print working time and running total
         // console.log(
@@ -972,7 +973,8 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
   adjustADO(); // DOES IT MATTER WHERE THE ADO IS IN THE FORTNIGHT??
   guaranteePayment();
   payWOBOD();
-  OTBonus();
+  // NO MORE OT BONUS
+  // OTBonus();
 
   //gross pay
   for (let i = 0; i < payArray.length; i++) {
@@ -1044,7 +1046,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
   }
 
   function payWOBOD() {
-    if (role === "Guard") {
+    if (role === "Guard" || role ==="Driver") {
       for (let i = 0; i < sickDays; i++) {
         wobodArray.shift();
       }
