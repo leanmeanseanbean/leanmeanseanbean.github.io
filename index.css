@@ -204,3 +204,27 @@ white-space: nowrap;
 overflow:hidden;
 background-color: #f2f2f2c0;
 }
+
+.Comments {
+  display:flex;
+  padding-left: 1px;
+  flex-wrap:wrap;
+}
+
+.commentBox {
+  flex: 0.1 0.5 80px;
+  height: 20px;
+  white-space:nowrap;
+}
+
+.commentBoxFirst {
+  flex: 0.1 0.5 79px;
+  height: 20px;
+  white-space:nowrap;
+}
+
+.extraKmBox {
+  flex: 0.1 1 144px;
+  height: 20px;
+  white-space:nowrap;
+}
