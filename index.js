@@ -49,10 +49,12 @@ storeData = () => {
   }
 };
 
+//need to refactor to include a getMonth and getDate and getFullYear methods to calculate the payrises
+
 calculatePay = (payRate, adoWeek, tableArray, role) => {
-  const payRise2023 = 0.0253;
-  const payRise2024 = 0.03;
-  const payRise2025 = 0.03;
+  const payRise2023 = 0.0353;
+  const payRise2024 = 0.0403;
+  const payRise2025 = 0.0403;
   const WOBOD = 0.48;
   const securityAllowance = 5.75;
   const cabEtrAllowance = 7.4;
