@@ -162,7 +162,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
   //calculate hours and minutes worked
   timeAsUnits = calculateTimeWorkedAsUnits(tableArray);
   // console.log(tableArray);
-  console.log(timeAsUnits);
+  // console.log(timeAsUnits);
   if (adoWeek === "long") {
     baseHours = longWeekHours;
     ordinaryDays = longWeekDays;
@@ -231,7 +231,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
         finishTimeRostered = timeAsUnits[i][2];
         finishTimeActual = timeAsUnits[i][3];
         shiftDay = weekdays[i]; 
-        console.log(shiftDay);
+        // console.log(shiftDay);
         if(timeAsUnits[i][1] !== "Sick"){
           shiftDayFinish = timeAsUnits[i][6][1];
           shiftStartUnits = timeAsUnits[i][5][0];
