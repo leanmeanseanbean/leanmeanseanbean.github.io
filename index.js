@@ -59,11 +59,11 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
   const securityAllowance = 5.75;
   const cabEtrAllowance = 7.4;
   const nsPenalty = 4.89;
-  const nightShiftPenalty = nsPenalty + (nsPenalty * payRise2023);
+  const nightShiftPenalty = rounded(nsPenalty + (nsPenalty * payRise2023));
   const emsPenalty = 4.15;
-  const EarlyMorningShiftPenalty = emsPenalty + (emsPenalty * payRise2023);
+  const EarlyMorningShiftPenalty = rounded(emsPenalty + (emsPenalty * payRise2023));
   const asPenalty = 4.15;
-  const AfternoonShiftPenalty = asPenalty + (asPenalty * payRise2023);
+  const AfternoonShiftPenalty = rounded(asPenalty + (asPenalty * payRise2023));
   const callOutPenalty = 0.25;
   const weekdayOT = 1.5;
   const weekendOT = 2;
@@ -71,7 +71,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
   const sunLoading = 1;
   const adoAdjustment = payRate * 4;
   const sLoading = 4.89;
-  const specialLoading = sLoading + (sLoading * payRise2023);
+  const specialLoading = rounded(sLoading + (sLoading * payRise2023));
   const shortWeekHours = 72;
   const longWeekHours = 80;
   const shiftLength = 8;
