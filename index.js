@@ -49,7 +49,7 @@ storeData = () => {
   }
 };
 
-//need to refactor to include a getMonth and getDate and getFullYear methods to calculate the payrises
+//need to refactor to include a getMonth and getDate and getFullYear methods to calculate the payrises                                                                                                             
 
 calculatePay = (payRate, adoWeek, tableArray, role) => {
   const payRise2023 = 0.0353;
@@ -162,7 +162,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
   //calculate hours and minutes worked
   timeAsUnits = calculateTimeWorkedAsUnits(tableArray);
   // console.log(tableArray);
-  // console.log(timeAsUnits);
+  console.log(timeAsUnits);
   if (adoWeek === "long") {
     baseHours = longWeekHours;
     ordinaryDays = longWeekDays;
@@ -1550,7 +1550,6 @@ calculateTimeWorkedAsUnits = (tableArray) => {
     `Saturday`,
     `Sunday`,
   ];
-
   tableArray.forEach((row, index) => {
     //if day is empty, day off or HOL
     if (row[0] === "" || row[0].toUpperCase() === "HOL") {
@@ -1673,8 +1672,7 @@ calculateTimeWorkedAsUnits = (tableArray) => {
         //LU
         // start time is before rostered, finish time is before rostered
         if (
-          startTimeInUnits < startTimeRosteredInUnits &&
-          workedUnitsRostered === workedUnits
+          startTimeInUnits < startTimeRosteredInUnits
         ) {
           // finish time is before rostered finish time and rostered finish time is < midnight
           if (finishTimeInUnits < finishTimeRosteredInUnits) {
@@ -1694,7 +1692,7 @@ calculateTimeWorkedAsUnits = (tableArray) => {
               )
             );
           }
-        } else {
+        } else { 
           x.push(`no lift up`);
         }
         //LB
