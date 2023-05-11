@@ -1680,7 +1680,7 @@ calculateTimeWorkedAsUnits = (tableArray) => {
               rounded(Math.abs(finishTimeRosteredInUnits - finishTimeInUnits))
             );
           }
-          if (
+          else if (
             finishTimeInUnits > finishTimeRosteredInUnits &&
             finishTimeRosteredInUnits < startTimeRosteredInUnits
           ) {
@@ -1691,6 +1691,9 @@ calculateTimeWorkedAsUnits = (tableArray) => {
                 Math.abs(finishTimeRosteredInUnits + 24 - finishTimeInUnits)
               )
             );
+          }
+          else {
+            x.push(`no lift up`);
           }
         } else { 
           x.push(`no lift up`);
