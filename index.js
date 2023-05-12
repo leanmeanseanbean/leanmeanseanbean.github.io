@@ -52,18 +52,18 @@ storeData = () => {
 //need to refactor to include a getMonth and getDate and getFullYear methods to calculate the payrises                                                                                                             
 
 calculatePay = (payRate, adoWeek, tableArray, role) => {
-  const payRise2023 = 0.0353;
+  const payRise2022 = 0.0353;
+  const payRise2023 = 0.0403;
   const payRise2024 = 0.0403;
-  const payRise2025 = 0.0403;
   const WOBOD = 0.48;
   const securityAllowance = 5.75;
   const cabEtrAllowance = 7.4;
   const nsPenalty = 4.89;
-  const nightShiftPenalty = rounded(nsPenalty + (nsPenalty * payRise2023));
+  const nightShiftPenalty = rounded(nsPenalty+ (nsPenalty * payRise2022) + (nsPenalty * payRise2023));
   const emsPenalty = 4.15;
-  const EarlyMorningShiftPenalty = rounded(emsPenalty + (emsPenalty * payRise2023));
+  const EarlyMorningShiftPenalty = rounded(emsPenalty + (emsPenalty * payRise2022) + (emsPenalty * payRise2023));
   const asPenalty = 4.15;
-  const AfternoonShiftPenalty = rounded(asPenalty + (asPenalty * payRise2023));
+  const AfternoonShiftPenalty = rounded(asPenalty + (asPenalty * payRise2022) + (asPenalty * payRise2023));
   const callOutPenalty = 0.25;
   const weekdayOT = 1.5;
   const weekendOT = 2;
@@ -71,7 +71,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
   const sunLoading = 1;
   const adoAdjustment = payRate * 4;
   const sLoading = 4.89;
-  const specialLoading = rounded(sLoading + (sLoading * payRise2023));
+  const specialLoading = rounded(sLoading + (sLoading * payRise2022) + (sLoading * payRise2023));
   const shortWeekHours = 72;
   const longWeekHours = 80;
   const shiftLength = 8;
