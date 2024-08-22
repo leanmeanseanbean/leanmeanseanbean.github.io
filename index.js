@@ -281,6 +281,7 @@ function CalculatePay(payObj) {
   }
 
   grossPay += AdoAdjustment(payObj.longFortnight, payObj.payrate);
+  payObj.ordinaryUnits += AdoAdjustmentForGuarantee(payObj.longFortnight);
   grossPay += GuaranteePayment(payObj);
 
   payDiv.innerText += ` \n Gross Pay:\n`;
@@ -645,7 +646,7 @@ function MorningShiftPenalty(rowObj){
         return 0;
     }
 
-    if(!rowObj.timeWorked || rowObj.PH || rowObj.day == "sat" || rowObj.day == "sun" && !rowObj.finishesNextDay){
+    if(!rowObj.timeWorked || rowObj.PH || rowObj.day == "sat" || rowObj.day == "sun"){
         return 0;
     }
 
@@ -654,13 +655,13 @@ function MorningShiftPenalty(rowObj){
         hours = 8;
     }
 
-      if (changeToUnits(rowObj.actualStart) >= 4.00 && changeToUnits(rowObj.actualStart) <= 5.5) {
-        payDiv.innerText += ` Morning Shift Dvrs/Grds Hrl: ......................................................................................\n`;
-        unitDiv.innerText += `${hours}: ...................................................................................................\n`;
-        rateDiv.innerText += `${earlyMorningShiftPenalty}...................................................................................................\n`;
-        amountDiv.innerText += `${rounded(hours * earlyMorningShiftPenalty)}\n`;
-        return parseFloat(rounded(hours * earlyMorningShiftPenalty));
-      }
+    if (changeToUnits(rowObj.actualStart) >= 4.00 && changeToUnits(rowObj.actualStart) <= 5.5) {
+    payDiv.innerText += ` Morning Shift Dvrs/Grds Hrl: ......................................................................................\n`;
+    unitDiv.innerText += `${hours}: ...................................................................................................\n`;
+    rateDiv.innerText += `${earlyMorningShiftPenalty}...................................................................................................\n`;
+    amountDiv.innerText += `${rounded(hours * earlyMorningShiftPenalty)}\n`;
+    return parseFloat(rounded(hours * earlyMorningShiftPenalty));
+    }
 
       return 0.00;
 
@@ -1109,6 +1110,16 @@ if (longFortnight) {
     amountDiv.innerText += ` \n${rounded(4 * payRate)}\n`;
     return parseFloat(rounded(4 * payRate));
   }
+}
+
+function AdoAdjustmentForGuarantee(longFortnight){
+    if(longFortnight){
+        return parseFloat(-4.00);
+    }
+
+    if(!longFortnight){
+        return parseFloat(4.00);
+    }
 }
 
 /***********************************
