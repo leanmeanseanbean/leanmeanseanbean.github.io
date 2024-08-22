@@ -1,0 +1,242 @@
+body {
+  background-color: lightblue;
+  text-align: center;
+}
+
+h1 {
+  text-transform: uppercase;
+}
+
+#container {
+  display: flex;
+  flex-direction: column;
+}
+
+.payfield {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+#payinput {
+  flex: 0.25;
+  min-width: 345px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.longshort {
+  display: flex;
+  flex: 0.25;
+  width: 345px;
+  justify-content: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.longweek {
+  flex: 0.25;
+  min-width: 160px;
+}
+
+.shortweek {
+  flex: 0.25;
+  min-width: 160px;
+}
+
+.driverguard {
+  display: flex;
+  flex: 0.2;
+  width: 300px;
+  justify-content: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.driverdiv {
+  flex: 0.2;
+  min-width: 120px;
+}
+
+.guarddiv {
+  flex: 0.2;
+  min-width: 120px;
+}
+
+#timesheet {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.timesheet {
+  flex: 1;
+  /* table-layout: fixed; */
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+  word-wrap: break-word;
+}
+
+.timesheet th,
+.timesheet td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  min-width: 90px;
+}
+
+.timesheet tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.timesheet tr:hover {
+  background-color: #ddd;
+}
+
+.timesheet th {
+  flex: 0 1 content;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #0f628c;
+  color: white;
+  text-align: center;
+}
+
+.timesheet td {
+  flex: 0 1 content;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.dayCol {
+  flex: 0 1 content;
+  /* width:60px; */
+}
+
+.timeCol {
+  flex: 0 1 content;
+  /* width: 90px; */
+}
+
+.allowanceCol {
+  flex: 0 1 content;
+  /* width: 90px; */
+}
+
+.timeInput {
+  width: 60px;
+  margin-right: 1px;
+}
+
+.displayHours {
+  background-color: lightblue;
+}
+
+.commentsCol {
+  flex: 0 1 content;
+  /* min-width: 100px; */
+}
+
+.sickButton {
+  width: 80px;
+  color: red;
+  font-weight: bold;
+}
+
+.calculatePay {
+  width: 150px;
+  height: 50px;
+  margin-top: 20px;
+  align-self: center;
+}
+
+.printpay {
+  flex: 1;
+  display: flex;
+  text-align: center;
+  justify-content: center;
+}
+#payDetails {
+    flex: 0.85;
+    display: inline-block;
+    text-align: left;
+    max-width: 300px;
+    text-overflow: clip;
+    white-space: nowrap;
+    overflow:hidden;
+  }
+
+#unitDetails {
+    padding-left: 5px;
+  flex: 0.25;
+  display: inline-block;
+  text-align: left;
+  max-width: 100px;
+  text-overflow: clip;
+  white-space: nowrap;
+  overflow:hidden;
+  background-color: #f2f2f2c0;
+}
+
+#rateDetails {
+  padding-left: 5px;
+flex: 0.25;
+display: inline-block;
+text-align: left;
+max-width: 100px;
+text-overflow: clip;
+white-space: nowrap;
+overflow:hidden;
+}
+
+
+#amountDetails {
+  padding-left: 5px;
+flex: 0.25;
+display: inline-block;
+text-align: left;
+max-width: 100px;
+text-overflow: clip;
+white-space: nowrap;
+overflow:hidden;
+background-color: #f2f2f2c0;
+}
+
+.Comments {
+  display:flex;
+  padding-left: 1px;
+  flex-wrap:wrap;
+}
+
+.commentBox {
+  flex: 0.1 0.5 80px;
+  height: 20px;
+  white-space:nowrap;
+}
+
+.commentBoxFirst {
+  flex: 0.1 0.5 79px;
+  height: 20px;
+  white-space:nowrap;
+}
+
+.extraKmBox {
+  flex: 0.1 1 144px;
+  height: 20px;
+  white-space:nowrap;
+}
+
+td {
+  padding: 0.5rem;
+}
+
+.dataRow:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.dataRow:hover {
+  background-color: #ddd;
+}
