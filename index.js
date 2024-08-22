@@ -1,2071 +1,1269 @@
-//gets all input boxes in the table
+var payDiv = document.getElementById("payDetails");
+var unitDiv = document.getElementById("unitDetails");
+var rateDiv = document.getElementById("rateDetails");
+var amountDiv = document.getElementById("amountDetails");
+var earlyMorningShiftPenalty = 4.47;
+var afternoonShiftPenalty = 4.46;
+var nightShiftPenalty = 5.26;
+var specialLoading = 5.26;
+
 storeData = () => {
-  const table = document.querySelectorAll("input");
-  const payRate = parseFloat(table[2].value);
-  let role;
-  let adoWeek;
-  //driver or guard
-  if (table[0].checked) {
-    role = table[0].value;
-  } else {
-    role = table[1].value;
-  }
-
-  //long or short fortnight
-  if (table[3].checked) {
-    adoWeek = table[3].value;
-  } else {
-    adoWeek = table[4].value;
-  }
-
-  if (table[2].value.trim() === "") {
-    alert("ENTER A PAY RATE!");
-  } else if (table[0].checked == false && table[1].checked == false) {
-    alert("ARE YOU A DRIVER OR GUARD?");
-  } else if (table[3].checked == false && table[4].checked == false) {
-    alert("IS IT A LONG OR SHORT FORTNIGHT?");
-  } else {
-    //array for all data in timesheet table
-    let tableArray = [];
-    //array for single row in table
-    let rowArray = [];
-    for (let i = 5; i < table.length; i++) {
-      //determine if end of row
-      if (table[i].readOnly) {
-        tableArray.push(rowArray);
-        rowArray = [];
-        continue;
-      }
-      //if checkbox, see if its checked or not
-      if (table[i].getAttribute("type") === "checkbox") {
-        rowArray.push(table[i].checked);
-        continue;
-      }
-      //else store the value of the input into the array for that row.
-      rowArray.push(table[i].value.trim());
+    const payrate = document.getElementById("payRate").value ? document.getElementById("payRate").value : alert("insert payrate");
+    const longOrShort = document.querySelector("input[name=longOrShort]:checked") ? document.querySelector("input[name=longOrShort]:checked").value : alert('pick long or short');
+    var longFortnight = true;    
+    if(longOrShort == "short") {
+        longFortnight = false;
     }
 
-    calculatePay(payRate, adoWeek, tableArray, role);
-  }
-};
+    const table = document.getElementById("timesheet");
+    const rows = table.querySelectorAll(".payRow");
 
-//need to refactor to include a getMonth and getDate and getFullYear methods to calculate the payrises                                                                                                             
+    var rowObj = {};
+    const tableObj = {};
+    var days = ['sun','mon', 'tues', 'wed', 'thur', 'fri', 'sat','sun','mon', 'tues', 'wed', 'thur', 'fri', 'sat'];
 
-calculatePay = (payRate, adoWeek, tableArray, role) => {
-  const payRise2022 = 0.0353;
-  const payRise2023 = 0.0403;
-  const payRise2024 = 0.0403;
-  const WOBOD = 0.48;
-  const securityAllowance = 5.75;
-  const cabEtrAllowance = 7.4;
-  const nsPenalty = 4.89;
-  const nightShiftPenalty = rounded(nsPenalty+ (nsPenalty * payRise2022) + (nsPenalty * payRise2023));
-  const emsPenalty = 4.15;
-  const EarlyMorningShiftPenalty = rounded(emsPenalty + (emsPenalty * payRise2022) + (emsPenalty * payRise2023));
-  const asPenalty = 4.15;
-  const AfternoonShiftPenalty = rounded(asPenalty + (asPenalty * payRise2022) + (asPenalty * payRise2023));
-  const callOutPenalty = 0.25;
-  const weekdayOT = 1.5;
-  const weekendOT = 2;
-  const satLoading = 0.5;
-  const sunLoading = 1;
-  const adoAdjustment = payRate * 4;
-  const sLoading = 4.89;
-  const specialLoading = rounded(sLoading + (sLoading * payRise2022) + (sLoading * payRise2023));
-  const shortWeekHours = 72;
-  const longWeekHours = 80;
-  const shiftLength = 8;
-  var timeLost = 0;
-  var baseHours = 76;
-  const payArray = [];
-  var dailyPayArray = [];
-  var shortFall = 0;
-  var BU = 0;
-  var LU = 0;
-  var LB = 0;
-  const weekdays = [
-    `Sunday`,
-    `Monday`,
-    `Tuesday`,
-    `Wednesday`,
-    `Thursday`,
-    `Friday`,
-    `Saturday`,
-    `Sunday`,
-    `Monday`,
-    `Tuesday`,
-    `Wednesday`,
-    `Thursday`,
-    `Friday`,
-    `Saturday`,
-    `Sunday`,
-  ];
-  const extraKmTiers = [
-    16.093, 24.14, 32.187, 40.234, 48.281, 56.328, 64.375, 72.422, 80.469,
-    88.516, 96.563, 104.61, 112.657, 120.704, 128.751, 136.798, 144.845,
-    152.892,
-  ];
-  const extraKmTimesInUnits = [
-    0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0,
-    4.25, 4.5, 4.75, 5.0,
-  ];
-  const bonusOtRates = [100, 250, 400];
-  const bonusOtShifts = [1, 2, 3];
-  var GrossPay = 0;
-  var daysWorkedCounter = 0;
-  var ordinaryUnits = 0;
-  var dailyUnits = 0;
-  var ordinaryDays = 0;
-  var shortWeekDays = 9;
-  var longWeekDays = 10;
-  var publicHoliday = false;
-  var payPh = false;
-  var security = false;
-  var cab = false;
-  var accruePh = false;
-  var callOut = false;
-  var overtime = false;
-  var OTdays = 0;
-  var wobodArray = [];
-  var sickDays = 0;
-  var milageShift = false;
-  var milageUnits = 0;
-  var milageBU = 0;
-  var milageOTUnits = 0;
-  var extraKm = 0;
-  var extraKmAsUnits = 0;
-  var offsetUnits = 0;
-  var singleDay = true;
-  var shiftStartUnits = 0;
-  var shiftFinishUnits = 0;
-  var startTimeRostered = 0;
-  var startTimeActual = 0;
-  var finishTimeRostered = 0;
-  var finishTimeActual = 0;
-  var shiftDay;
-  var shiftDayFinish;
-  var dayAfterPH = false;
-  //displaying information to user
-  var payDiv = document.getElementById("payDetails");
-  var unitDiv = document.getElementById("unitDetails");
-  var rateDiv = document.getElementById("rateDetails");
-  var amountDiv = document.getElementById("amountDetails");
+    tableObj.longFortnight = longFortnight;
+    tableObj.payrate = payrate;
+    var excessCounter = 0;
+
+    //for each row in the table we need to calculate
+    rows.forEach((row,i) => {
+        // console.log(row);
+        //find the inputs for the day
+        const dataInputs = row.querySelectorAll("input");
+        // console.log(dataInputs);
+        //for each input for each row
+        for (let y = 0; y < dataInputs.length; y++) {
+            if(dataInputs[y].value.trim().toLowerCase() == "hol"){
+                rowObj["hol"] = true;
+                rowObj[5] = true;
+                break;
+            }
+            //if its a checkbox and is checked ie. PH, accrue PH, OT or callout
+            if(dataInputs[y].type == "checkbox" && dataInputs[y].checked){
+                rowObj[`${y}`] = true;    
+            }//if its a checkbox and is NOT checked ie. PH, accrue PH, OT or callout
+            else if (dataInputs[y].type == "checkbox" && !dataInputs[y].checked){
+                rowObj[`${y}`] = false;  
+            }//if rostered sign on is empty
+            else if(dataInputs[y].id.includes("RosteredSignOn") && dataInputs[y].value.trim().toLocaleLowerCase() !== "sick" && dataInputs[y].value.trim() == ""){
+                rowObj["RDO"] = true;
+                rowObj[5] = dataInputs[5].checked;
+                rowObj[6] = dataInputs[6].checked;
+                break;
+            }//if rostered sign on says SICK
+            else if(dataInputs[y].id.includes("ActualSignOn") && dataInputs[y].value.trim().toLocaleLowerCase() == "sick"){
+                rowObj["sick"] = true;
+                rowObj[`${y+1}`] = dataInputs[y+1].value.trim();
+                rowObj[5] = dataInputs[5].checked;
+                rowObj[6] = dataInputs[6].checked;
+                break;
+            }
+            else { //otherwise just add the value
+                rowObj[`${y}`] = dataInputs[y].value.trim();
+            }
+        }
+        rowObj.day = days[i];
+        
+        if(!rowObj.sick && !rowObj.RDO){
+            excessCounter++;
+        }
+
+        if(excessCounter > 10 && tableObj.longFortnight || excessCounter > 9 && !tableObj.longFortnight){
+            rowObj.excessDayNormal = true;
+        }
+        if(excessCounter > 12 && tableObj.longFortnight || excessCounter > 11 && !tableObj.longFortnight){
+            rowObj.excessDayDouble = true;
+        }
+
+        tableObj[`${i}`] = rowObj;
+        // console.log(rowObj);
+        rowObj = {};
+    })
+
+    convertInputs(tableObj);
+}
+
+
+function convertInputs(tableObj) {
+    const payObj = {};
+    payObj.longFortnight = tableObj.longFortnight;
+    payObj.payrate = parseFloat(tableObj.payrate);
+    payObj.ordinaryUnits = 0;
+    payObj.timeLost = 0;
+
+    for (let i = 0; i < 14; i++) {
+        let rowObj = {};
+        rowObj['day'] = tableObj[i]['day'];
+        if(!!tableObj[i].excessDayNormal){
+            rowObj['excessDayNormal'] = true;
+        }
+        if(!!tableObj[i].excessDayDouble){
+            rowObj['excessDayDouble'] = true;
+        }
+        if(!!tableObj[i].RDO){ //IF ITS AN RDO
+            rowObj['RDO'] = true;
+            if(tableObj[i][5] == true){ //add in PH or accrued PH only if its a PH
+                rowObj['PH'] = tableObj[i][5];
+                rowObj['accruePH'] = tableObj[i][6];
+            }
+            payObj[i] = rowObj;
+            rowObj = {};
+            continue;
+        }
+        if(!!tableObj[i].sick){ //IF ITS A SICK DAY
+            rowObj['rosteredStart'] = changeToUnits(tableObj[i][0]);
+            rowObj['rosteredFinish'] = changeToUnits(tableObj[i][2]);
+            rowObj['sick'] = true;
+            if(tableObj[i][5] == true){
+                rowObj['PH'] = tableObj[i][5];
+                rowObj['accruePH'] = tableObj[i][6];
+            }
+
+            payObj.timeLost += 8.00;
+            payObj[i] = rowObj;
+            rowObj = {};
+            continue;
+        }
+        if(!!tableObj[i].hol){
+            rowObj['hol'] =  true;
+            if(tableObj[i][5] == true){ //add in PH or accrued PH only if its a PH
+                rowObj['PH'] = true;
+            }
+            payObj[i] = rowObj;
+            rowObj = {};
+            continue;
+        }
+        else { //OTHERWISE ITS A WORKING DAY
+            rowObj['rosteredStart'] = tableObj[i][0];
+            rowObj['actualStart'] = tableObj[i][1];
+            rowObj['rosteredFinish'] = tableObj[i][2];
+            rowObj['actualFinish'] = tableObj[i][3];
+            if(tableObj[i][4].trim() !== ""){
+                rowObj['milage'] = tableObj[i][4];
+            }
+            if(tableObj[i][5] == true){
+                rowObj['PH'] = tableObj[i][5];
+                rowObj['accruePH'] = tableObj[i][6];
+            }
+            if(tableObj[i][7] == true){
+                rowObj['OT'] = tableObj[i][7];
+                rowObj['callout'] = tableObj[i][8];
+            }
+            if(tableObj[i][9].trim() !== ""){
+                rowObj['extraKM'] = tableObj[i][9];
+            }
+            rowObj['timeWorked'] = tableObj[i][10];
+            rowObj['timeWorkedInUnits'] = changeToUnits(rowObj['timeWorked']);
+
+            // console.log(rowObj);
+
+            // CHECKING THE TIME WORKED MATCHES THE ACTUAL START AND FINISH TIMES
+            if(changeToMinutes(rowObj.actualFinish) > changeToMinutes(rowObj.actualStart)){ // if the shift starts and ends on the same day
+                let shouldHaveWorked = changeToMinutes(rowObj.actualFinish) - changeToMinutes(rowObj.actualStart); // check the difference in start and finish times
+                if(shouldHaveWorked !== changeToMinutes(rowObj.timeWorked)){ // it should match the time worked inputted
+                    // console.log(shouldHaveWorked);
+                    // console.log(changeToMinutes(rowObj.timeWorked));
+                    console.log('error here');
+                    alert('error. time worked isnt the same as the hours you put in'); // if not throw an error
+                }
+            }
+            if(changeToMinutes(rowObj.actualFinish) < changeToMinutes(rowObj.actualStart)){ // if the shift finishes the next day
+                let shouldHaveWorked = (changeToMinutes(rowObj.actualFinish) + changeToMinutes('2400')) - changeToMinutes(rowObj.actualStart); // add 24 hours to the finish time and then check the differences
+                if(shouldHaveWorked !== changeToMinutes(rowObj.timeWorked)){ // it should match the time worked inputted
+                    // console.log(shouldHaveWorked);
+                    // console.log(changeToMinutes(rowObj.timeWorked));
+                    // console.log(rowObj.day);
+                    // console.log('and error here');
+                    alert('error. time worked isnt the same as the hours you put in'); // if not throw an error
+                }
+                else{ 
+                    rowObj['finishesNextDay'] = true;
+                }
+            }
+
+            //CHECK IF ITS SUPPOSE TO FINISH THE NEXT DAY BY ROSTERED TIMES
+            if(rowObj.rosteredFinish < rowObj.rosteredStart){
+                rowObj['shouldFinishNextDay'] = true;
+            }
+
+            rowObj['totalWorked'] = parseFloat(rowObj['timeWorkedInUnits']);
+
+            let isLiftedUp = LiftUp(rowObj);
+            if(isLiftedUp){
+                rowObj.liftUpAsMinutes = isLiftedUp;
+                rowObj.liftUpAsUnits = minutesAsUnits(isLiftedUp);
+                rowObj['totalWorked'] += parseFloat(rowObj.liftUpAsUnits);
+            }
+
+            let isLaidBack = Layback(rowObj);
+            if(isLaidBack){
+                rowObj.laybackAsMinutes = isLaidBack;
+                rowObj.laybackAsUnits = minutesAsUnits(isLaidBack);
+                rowObj['totalWorked'] += parseFloat(rowObj.laybackAsUnits);
+            }
+
+            let hasBuildUp = Buildup(rowObj);
+            if(hasBuildUp){
+                rowObj.buildupAsMinutes = hasBuildUp;
+                rowObj.buildupAsUnits = minutesAsUnits(hasBuildUp);
+                rowObj['totalWorked'] += parseFloat(rowObj.buildupAsUnits);
+            }
+
+            let hasExtraKM = ExtraKMAsUnits(rowObj);
+            if(hasExtraKM){
+                rowObj.extraKMAsUnits = hasExtraKM;
+                rowObj['totalWorked'] += rowObj.extraKMAsUnits;
+            }
+            
+            payObj.ordinaryUnits += rowObj.totalWorked;
+            payObj[i] = rowObj;
+            rowObj = {};
+        }
+    }
+
+    CalculatePay(payObj);
+    DisplayBreakdown(payObj);
+    return payObj;
+}
+
+function CalculatePay(payObj) {
+    console.log(payObj);
   //empty any existing text
   payDiv.innerText = "";
   unitDiv.innerText = ``;
   rateDiv.innerText = ``;
   amountDiv.innerText = ``;
-  for (let i = 0; i < 14; i++) {
-    document.getElementsByClassName("displayHours")[i].value = ``;
-  }
-
-  //calculate hours and minutes worked
-  timeAsUnits = calculateTimeWorkedAsUnits(tableArray);
-  // console.log(tableArray);
-  // console.log(timeAsUnits);
-  if (adoWeek === "long") {
-    baseHours = longWeekHours;
-    ordinaryDays = longWeekDays;
-  } else {
-    baseHours = shortWeekHours;
-    ordinaryDays = shortWeekDays;
-  }
-  // format of tableArray =
-  // [0] start time rostered - 1234
-  // [1] start time actual - 1234
-  // [2] finish time rostered - 1234
-  // [3] finish time actual - 1234
-  // [4] security - true/false
-  // [5] cab - true/false
-  // [6] 209km passed - 1234
-  // [7] PH - true/false
-  // [8] accrue PH - true/false
-  // [9] Overtime - true/false
-  // [10] callout - true/false
-  // [11] extra Km's - 1234
-
-  // format of timeAsUnits =
-  // [0] Rostered start
-  // [1] actual start,
-  // [2] rostered finish,
-  // [3] actual finish,
-  // [4] shift length
-  // [5] [time worked, which day start],
-  // [6] [time worked, which day finish (IF ANY, <day>')],
-  // [7] lift up (IF ANY, else 'no LU'),
-  // [8] layback (IF ANY, else 'no lb'),
-  // [9] buildup (IF ANY, else 'no BU')
-  // [10] milage [209km time as units, time before 209km, buildup, time over 209km] (IF ANY, else 'No Milage')
-
-  // TO DO'S:
-
-  // CHECK EXTRA KM's AND EFFECT ON PH's.
 
   payDiv.innerText += ` \n Details \n`;
   unitDiv.innerText += ` \nUnits\n`;
   rateDiv.innerText += ` \nRate\n`;
   amountDiv.innerText += ` \nAmounts\n`;
 
-  //CALCULATING DAILY HOURS
-  for (let i = 0; i < timeAsUnits.length; i++) {
-    // IF ITS NOT A DAY OFF
-    if (timeAsUnits[i].length > 0) {
-      //adding all the working time;
-      payDiv.innerText += ` \n${weekdays[i]}: \n`;
-      unitDiv.innerText += ` \n\n`;
-      rateDiv.innerText += `\n\n`;
-      amountDiv.innerText += ` \n\n`;
+  var grossPay = 0;
 
-      if (timeAsUnits[i] !== "Hol") {
-        dailyPayArray = [];
-        daysWorkedCounter++;
-        payPh = tableArray[i][7];
-        accruePh = tableArray[i][8];
-        security = tableArray[i][4];
-        cab = tableArray[i][5];
-        overtime = tableArray[i][9];
-        callOut = tableArray[i][10];
-        dailyUnits = timeAsUnits[i][4];
-        startTimeRostered = timeAsUnits[i][0];
-        startTimeActual = timeAsUnits[i][1];
-        finishTimeRostered = timeAsUnits[i][2];
-        finishTimeActual = timeAsUnits[i][3];
-        shiftDay = weekdays[i]; 
-        // console.log(shiftDay);
-        if(timeAsUnits[i][1] !== "Sick"){
-          shiftDayFinish = timeAsUnits[i][6][1];
-          shiftStartUnits = timeAsUnits[i][5][0];
-          shiftFinishUnits = timeAsUnits[i][6][0];
-        }
-
-        if (
-          //IF THERE IS MILAGE ADD THE TIMES
-          timeAsUnits[i][10] !== "No milage" &&
-          timeAsUnits[i][1] !== "Sick"
-        ) {
-          milagePassedAt = timeAsUnits[i][10][0];
-          milageUnits = timeAsUnits[i][10][1];
-          milageBU = timeAsUnits[i][10][2];
-          if (milageUnits < 8) {
-            milageOTUnits = timeAsUnits[i][10][3];
-          }
-          offsetUnits += milageOTUnits;
-          milageShift = true;
-        }
-        if(timeAsUnits[i][1] !== "Sick"){
-        // IF THE DAY THE SHIFT STARTS AND FINISHES ARENT THE SAME, MULTI DAY SHIFT
-        if (timeAsUnits[i][5][1] !== timeAsUnits[i][6][1]) {
-          singleDay = false;
-          if (i < 13) {
-            if (
-              tableArray[i + 1][7] ||
-              tableArray[i + 1][8] ||
-              timeAsUnits[i + 1] === "Hol"
-            ) {
-              dayAfterPH = true;
-            }
-          }
-        } 
-      }
-        // CALCULATE ORDINARY TIME FOR 9/10 DAYS IN FORTNIGHT
-        if (daysWorkedCounter <= ordinaryDays) {
-          if(dailyUnits > 0){
-            ordinaryUnits += dailyUnits;
-            // console.log("normal hours: " + ordinaryUnits + " - " + dailyUnits);
-          }
-        }
-      }
-
-      if (accruePh || payPh) {
-        publicHoliday = true;
-      } else {
-        publicHoliday = false;
-      }
-
-      //display time worked in the timesheet
-      if (timeAsUnits[i].length > 5) {
-        document.getElementsByClassName("displayHours")[
-          i
-        ].value = `${Math.trunc(dailyUnits)}'${Math.round(
-          (dailyUnits - Math.trunc(dailyUnits)) * 60
-        )}"`;
-      }
-
-      //add offset times for ordinary hours
-      if (timeAsUnits[i].length > 5) {
-        //buildup
-        if (timeAsUnits[i][9] !== "no buildup") {
-          //build up as units
-          BU = timeAsUnits[i][9];
-          offsetUnits += BU;
-          if (daysWorkedCounter <= ordinaryDays) {
-            ordinaryUnits += BU;
-            // console.log("BU: " + ordinaryUnits + " - " + BU);
-          }
-        }
-        //liftup
-        if (timeAsUnits[i][7] !== "no lift up") {
-          //lift up as units
-          LU = timeAsUnits[i][7];
-          offsetUnits += LU;
-          if (daysWorkedCounter <= ordinaryDays) {
-            ordinaryUnits += LU;
-            // console.log("LU: " + ordinaryUnits + " - " + LU);
-          }
-        }
-        //layback
-        if (timeAsUnits[i][8] !== "no layback") {
-          //layback as units
-          LB = timeAsUnits[i][8];
-          offsetUnits += LB;
-          if (daysWorkedCounter <= ordinaryDays) {
-            ordinaryUnits += LB;
-            // console.log("LB: " + ordinaryUnits + " - " + LB);
-          }
-        }
-
-        //extra KM - drivers only
-        if (role === "Driver") {
-          if (tableArray[i][11] !== "") {
-            extraKm = parseInt(tableArray[i][11]);
-            for (let i = 0; i < extraKmTiers.length; i++) {
-              //0 - 16.093kms
-              if (extraKm < extraKmTiers[i] && i === 0)
-                extraKmAsUnits = extraKmTimesInUnits[i];
-              //16.094 - 152.892
-              if (extraKm > extraKmTiers[i - 1] && extraKm <= extraKmTiers[i]) {
-                extraKmAsUnits = extraKmTimesInUnits[i];
-              }
-              //152.893 and over by 8.046 increments of 15 minutes
-              if (extraKm > extraKmTiers[i] && i === 17) {
-                extraKmAsUnits = extraKmTimesInUnits[i];
-                //how many additional increments of 15 minutes
-                //Math.ceil()
-                // multiply by 15 mins or .25 units
-                let x = Math.ceil((extraKm - extraKmTiers[i]) / 8.046) * 0.25;
-                extraKmAsUnits += x;
-              }
-            }
-            offsetUnits += extraKmAsUnits;
-          }
-        }
-      }
-
-      //if not sick...
-      // CALCULATE PAYMENTS
-      if (timeAsUnits[i].length > 5) {
-        //excess shifts: overtime 150 on weekdays and 200 on weekends
-        if (daysWorkedCounter > ordinaryDays) {
-          if (singleDay) {
-            //if its 1st or 2nd excess shift mon-fri, or a public holiday that isnt a saturday its 150%
-            if (daysWorkedCounter <= ordinaryDays + 2) {
-              //weekday 150%
-              if (weekdays[i] !== "Saturday") {
-                excessWeekday(dailyUnits + BU + LU + LB + extraKmAsUnits);
-              }
-              //saturday max 200%
-              if (weekdays[i] === "Saturday" || weekdays[i] === "Sunday") {
-                excessWeekend(dailyUnits + BU + LU + LB + extraKmAsUnits);
-              }
-              // public holiday loading 50% - applicable on weekdays + sat only
-              if (publicHoliday && weekdays[i] !== "Saturday") {
-                PHweekday(dailyUnits);
-              }
-            }
-            //if its 3rd excess day or more, or weekend, its 200%
-            if (daysWorkedCounter > ordinaryDays + 2) {
-              excessWeekend(dailyUnits + BU + LU + LB + extraKmAsUnits);
-            }
-            if (milageBU > 0) {
-              milageBuildUp(milageBU);
-            }
-          }
-          if (!singleDay) {
-            if (daysWorkedCounter <= ordinaryDays + 2) {
-              //if shift starts on weekday - 150%
-              if (shiftDay !== "Saturday") {
-                if (shiftDayFinish !== "Saturday") {
-                  excessWeekday(
-                    shiftStartUnits +
-                      shiftFinishUnits +
-                      LB +
-                      LU +
-                      BU +
-                      extraKmAsUnits
-                  );
-                }
-                //and finishes on a weekend - 200%
-                if (shiftDayFinish === "Saturday") {
-                  excessWeekday(shiftStartUnits + LB);
-                  excessWeekend(shiftFinishUnits + LU + BU + extraKmAsUnits);
-                }
-                //if day finishes is a weekday PH - 50% PH loading to total of 200%
-                if (
-                  dayAfterPH &&
-                  shiftDayFinish !== "Saturday" &&
-                  shiftDayFinish !== "Sunday"
-                ) {
-                  PHweekday(shiftFinishUnits);
-                }
-              }
-              //if shift starts on a saturday and finishes on sunday, its all 200%
-              if (shiftDay === "Saturday") {
-                excessWeekend(dailyUnits + BU + LU + LB + extraKmAsUnits);
-              }
-              if (publicHoliday && shiftDay !== "Saturday") {
-                PHweekday(shiftStartUnits);
-              }
-            }
-            if (daysWorkedCounter > ordinaryDays + 2) {
-              //all 200%
-              excessWeekend(dailyUnits + BU + LU + LB + extraKmAsUnits);
-            }
-            if (milageBU > 0) {
-              milageBuildUp(milageBU);
-            }
-          }
-        }
-        //calculating first 9/10 days ordinary hours
-        if (daysWorkedCounter <= ordinaryDays) {
-          //singleDay
-          if (singleDay) {
-            //CHANGE THIS BACK TO SINGLEDAY WHEN ITS FIXED
-            // if (true) {
-            //IF THERE IS NO MILAGE
-            if (timeAsUnits[i][10] === "No milage") {
-              ShiftPay(dailyUnits + BU + LU + LB + extraKmAsUnits);
-            }
-            //IF THERE IS MILAGE
-            if (timeAsUnits[i][10] !== "No milage") {
-              //shifts total over 8 hours and 209km passed before 8 hours
-              if (milageUnits < 8) {
-                // weekday non ph, all OT is 150%
-                if (
-                  weekdays[i] !== "Saturday" &&
-                  weekdays[i] !== "Sunday" &&
-                  !publicHoliday
-                ) {
-                  NormalPay(shiftLength);
-                  MilagePayment(milageOTUnits);
-
-                  //excess is 150% on weekdays eg - 30" + any LU LB BU etc
-                  if (BU + LU + LB + extraKmAsUnits > 0) {
-                    OneHalfOT(BU + LU + LB + extraKmAsUnits);
-
-                  }
-                }
-                // saturday or weekday ph - 150% to 8 hours, over 8 OT is 200%
-                if (
-                  (weekdays[i] === "Saturday" && !publicHoliday) ||
-                  (weekdays[i] !== "Sunday" &&
-                    weekdays[i] !== "Saturday" &&
-                    publicHoliday)
-                ) {
-                  NormalPay(shiftLength);
-                  MilagePayment(milageOTUnits);
-
-                  // excess over 8 hours is 200%
-                  if (BU + LU + LB + extraKmAsUnits > 0) {
-                    DoubleOT(BU + LU + LB + extraKmAsUnits);
-
-                  }
-                }
-                // sat PH = 200% max, sunday = 200% max
-                if (
-                  weekdays[i] === "Sunday" ||
-                  (weekdays[i] === "Saturday" && publicHoliday)
-                ) {
-                  //milage eg 7'30"
-                  NormalPay(shiftLength);
-
-                  // excess is 200%
-                  DoubleOT(milageOTUnits + BU + LU + LB + extraKmAsUnits);
-      
-                }
-              }
-              //no milage
-              if (milageUnits >= 8) {
-                // weekday non ph, all OT is 150%
-                if (
-                  weekdays[i] !== "Saturday" &&
-                  weekdays[i] !== "Sunday" &&
-                  !publicHoliday
-                ) {
-                  NormalPay(shiftLength);
-          
-                  //excess is 150% on weekdays eg - 30" + any LU LB BU etc
-                  OneHalfOT(
-                    dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits
-                  );
-                } else {
-                  NormalPay(shiftLength);
-                  DoubleOT(
-                    dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits
-                  );
-                }
-              }
-              if (
-                callOut &&
-                weekdays[i] !== "Saturday" &&
-                weekdays[i] !== "Sunday"
-              ) {
-                ApplyCallOut(dailyUnits + BU + LU + LB + extraKmAsUnits);
-              }
-            }
-            //LOADINGS BASED ON ACTUAL HOURS WORKED + LAYBACK
-            //NEED TO REFACTOR TO ROUND UP OR DOWN THE MINUTES FOR AN EXTRA UNIT OF PAY - 30 MINUTES IS DOWN
-            // saturday loading
-            if (shiftDay === "Saturday" && !publicHoliday) {
-              saturdayLoading(dailyUnits);
-            }
-            // sunday loading
-            if (shiftDay === "Sunday" && !publicHoliday) {
-              sundayLoading(dailyUnits);
-            }
-            // public holiday loading
-            if (publicHoliday) {
-              // weekend PH is 100%
-              if (weekdays[i] === "Sunday" || weekdays[i] === "Saturday") {
-                PHsunday(dailyUnits);
-              } else {
-                PHweekday(dailyUnits);
-              }
-            }
-            //SHIFT ALLOWANCE PENALTIES - ONLY ON WEEKDAYS
-            if (
-              shiftDay !== "Sunday" &&
-              shiftDay !== "Saturday" &&
-              !publicHoliday &&
-              !callOut
-            ) {
-              morningPenalty(dailyUnits);
-              afternoonPenalty(dailyUnits);
-              nightPenalty(dailyUnits);
-              specialLoadingPenalty();
-            }
-          }
-          if (!singleDay) {
-            //starts on weekday
-            if (shiftDay !== "Saturday" && shiftDay !== "Sunday") {
-              // NormalPay(shiftStartUnits + LB);
-              //shift that is over 8 hours is 150% OT on weekdays but 200% OT on saturday
-              //so we can normal pay up to 8 hours
-              //if there is milage
-              if (milageBU > 0) {
-                NormalPay(milageUnits + LB);
-                //add milage buildup
-                milageBuildUp(milageBU);
-                // if the milage happens on the first day
-                if (milageUnits < shiftStartUnits) {
-                  //and the shift finishes on a saturday no PH
-                  if (shiftDayFinish === "Saturday" && !dayAfterPH) {
-                    //penalty is 150% for the first 8 hours, even on a non PH saturday
-                    MilagePayment(milageBU);
-                    //until after 8 hours saturday when it becomes 200%
-                    doubleOT(
-                      shiftFinishUnits - milageBU + LU + BU + extraKmAsUnits
-                    );
-                  }
-                  // but if the shift finishes on a PH saturday
-                  if (shiftDayFinish === "Saturday" && dayAfterPH) {
-                    //there is a penalty only for the weekday portion of the shift
-                    MilagePayment(shiftStartUnits - milageUnits);
-                    doubleOT(shiftFinishUnits + LU + LB + extraKmAsUnits);
-                  }
-                  //but if the shift finishes on a weekday
-                  if (shiftDayFinish !== "Saturday") {
-                    if (dailyUnits + BU + LU + LB + extraKmAsUnits <= 8) {
-                      NormalPay(dailyUnits + BU + LU + LB + extraKmAsUnits);
-                    }
-                    //its all 150% until 8 hours
-                    if (
-                      dailyUnits + BU + LU + LB + extraKmAsUnits > 8 &&
-                      dailyUnits + BU + LU + LB + extraKmAsUnits <= 11
-                    ) {
-                      MilagePayment(milageBU);
-                      OneHalfOT(
-                        shiftFinishUnits - milageBU + LU + BU + extraKmAsUnits
-                      );
-                    }
-                    //200% after 8 hours
-                    if (dailyUnits + BU + LU + LB + extraKmAsUnits > 11) {
-                      MilagePayment(milageBU);
-                      OneHalfOT(3);
-                      DoubleOT(dailyUnits + BU + LU + extraKmAsUnits - 11);
-                    }
-                  }
-                }
-                //if the milage occurs on the next day
-                if (milageUnits > shiftStartUnits) {
-                  //and the shift finishes on a saturday no PH
-                  if (shiftDayFinish === "Saturday" && !dayAfterPH) {
-                    //penalty is 150% for the first 8 hours, even on a non PH saturday
-                    MilagePayment(milageBU);
-                    //until after 8 hours saturday when it becomes 200%
-                    DoubleOT(
-                      shiftFinishUnits - milageBU + LU + BU + extraKmAsUnits
-                    );
-                  }
-                  //if the shift finishes on a PH saturday
-                  if (shiftDayFinish === "Saturday" && dayAfterPH) {
-                    //there is no milage penalty for sat PH, only the buildup payment
-                    //but everything after the milage unit is 200%
-                    DoubleOT(
-                      dailyUnits - milageUnits + LU + LB + extraKmAsUnits
-                    );
-                  }
-                  //if the shift finishes on a weekday
-                  if (shiftDayFinish !== "Saturday") {
-                    if (
-                      dailyUnits + BU + LU + LB + extraKmAsUnits > 8 &&
-                      dailyUnits + BU + LU + LB + extraKmAsUnits <= 11
-                    ) {
-                      MilagePayment(milageBU);
-                      OneHalfOT(
-                        shiftFinishUnits - milageBU + LU + BU + extraKmAsUnits
-                      );
-                    }
-                    //200% after 8 hours
-                    if (dailyUnits + BU + LU + LB + extraKmAsUnits > 11) {
-                      MilagePayment(milageBU);
-                      OneHalfOT(3);
-                      DoubleOT(dailyUnits + BU + LU + LB + extraKmAsUnits - 11);
-                    }
-                  }
-                }
-              }
-              //if there is no milage
-              if (milageBU === 0) {
-                //if next day is weekday
-                if (shiftDayFinish !== "Saturday") {
-                  //normal pay for shifts up to 8 hours
-                  if (
-                    dailyUnits +
-                      LU +
-                      BU +
-                      LB +
-                      extraKmAsUnits <=
-                    shiftLength
-                  ) {
-                    NormalPay(dailyUnits + LB + LU + BU + extraKmAsUnits);
-                  }
-                  //OT 150% after 8 hours
-                  if (
-                    dailyUnits + LU + BU + LB + extraKmAsUnits > shiftLength &&
-                    dailyUnits + LU + BU + LB + extraKmAsUnits < 11
-                  ) {
-                    //HOW DOES LAY BACK GET PAID? ATM ITS GIVING TOTAL OF 8.5 HOURS AT NORMAL PAY
-                    NormalPay(shiftLength);
-                    OneHalfOT(
-                      dailyUnits - shiftLength + BU + LU + LB + extraKmAsUnits
-                    );
-                  }
-                  //OT 200% after 11 hours
-                  if (dailyUnits + LU + BU + LB + extraKmAsUnits > 11) {
-                    NormalPay(shiftLength);
-                    OneHalfOT(3);
-                    DoubleOT(dailyUnits + BU + LU + LB + extraKmAsUnits - 11);
-                  }
-                }
-                //if next day is saturday
-                if (shiftDayFinish === "Saturday") {
-                  //normal pay for shifts up to 8 hours
-                  if (
-                    dailyUnits + LU + BU + LB + extraKmAsUnits <=
-                    shiftLength
-                  ) {
-                    NormalPay(dailyUnits + LU + BU + LB + extraKmAsUnits);
-                  }
-                  //OT 200% after 8 hours
-                  if (
-                    dailyUnits + LU + BU + LB + extraKmAsUnits >
-                    shiftLength
-                  ) {
-                    NormalPay(shiftLength);
-                    DoubleOT(
-                      dailyUnits - shiftLength + LU + BU + LB + extraKmAsUnits
-                    );
-                  }
-                }
-              }
-              if ( //if normal weekday and finishes on normal weekday
-                !publicHoliday &&
-                !callOut
-              ) {
-                if(shiftDayFinish !== "Saturday" &&
-                !dayAfterPH){
-                  morningPenalty(dailyUnits);
-                  afternoonPenalty(dailyUnits);
-                  nightPenalty(dailyUnits);
-                  specialLoadingPenalty();
-                }
-                if(shiftDayFinish !== "Saturday" &&
-                dayAfterPH){
-                  morningPenalty(shiftStartUnits);
-                  afternoonPenalty(shiftStartUnits);
-                  nightPenalty(shiftStartUnits);
-                  PHweekday(shiftFinishUnits);
-                }
-                if(shiftDayFinish === "Saturday" && !dayAfterPH){
-                  morningPenalty(shiftStartUnits);
-                  afternoonPenalty(shiftStartUnits);
-                  nightPenalty(shiftStartUnits);
-                  specialLoadingPenalty();
-                  saturdayLoading(shiftFinishUnits);
-                }
-              } //if public holiday and finishes on a saturday
-              if (publicHoliday && shiftDayFinish === "Saturday") {
-                if(dailyUnits < 8.5){
-                  saturdayLoading(shiftFinishUnits);
-                }
-                else if(dailyUnits >= 8.5){
-                  saturdayLoading(shiftLength - Math.round(shiftStartUnits));
-                }
-              }
-              if (publicHoliday && shiftDayFinish !== "Saturday" && !dayAfterPH) {
-                if(dailyUnits < 8.5){
-                morningPenalty(shiftFinishUnits);
-                nightPenalty(shiftFinishUnits);
-                afternoonPenalty(shiftFinishUnits);
-                }
-                if(dailyUnits >= 8.5){
-                morningPenalty(shiftLength - Math.round(shiftStartUnits));
-                nightPenalty(shiftLength - Math.round(shiftStartUnits));
-                afternoonPenalty(shiftLength - Math.round(shiftStartUnits));
-                }
-              }
-              if (callOut) {
-                if (shiftDayFinish !== "Saturday") {
-                  ApplyCallOut(dailyUnits);
-                }
-                if (shiftDayFinish === "Saturday") {
-                  if(dailyUnits < 8.5){
-                    ApplyCallOut(shiftStartUnits);
-                    saturdayLoading(shiftFinishUnits);
-                  }
-                  if(dailyUnits >= 8.5){
-                    ApplyCallOut(shiftStartUnits);
-                    saturdayLoading(shiftLength - Math.round(shiftStartUnits));
-                  }
-                }
-              }
-              if (publicHoliday) {
-                if (dayAfterPH) {
-                  PHweekday(dailyUnits);
-                }
-                if (!dayAfterPH) {
-                  PHweekday(shiftStartUnits);
-                }
-              }
-            }
-            //sat to sun
-            if (shiftDay === "Saturday") {
-              if (dailyUnits + LB + LU + BU + extraKmAsUnits <= shiftLength) {
-                NormalPay(shiftFinishUnits + shiftStartUnits + LB + LU + BU + extraKmAsUnits);
-              }
-              if (dailyUnits + LB + LU + BU + extraKmAsUnits > shiftLength) {
-                NormalPay(shiftLength);
-                DoubleOT(
-                  dailyUnits + LB + LU + BU + extraKmAsUnits - shiftLength
-                );
-              }
-              //if there is milage
-              if (milageBU > 0) {
-                //add milage buildup
-                milageBuildUp(milageBU);
-                //and milage occurs on the first day before midnight aka sunday
-                if (milageUnits < shiftStartUnits) {
-                  //if its not a PH, add the milage penalty for any remaining saturday shift time over the milage time
-                  //penalty does not apply on PH
-                  if (!publicHoliday) {
-                    MilagePayment(shiftStartUnits - milageUnits);
-                  }
-                }
-                // if milage occurs on sunday there is no penalty
-              }
-              //if not a PH, add saturday loading for saturday portion of shift
-              if (!publicHoliday) {
-                saturdayLoading(shiftStartUnits + LB);
-                // if finish day is non PH sunday, add sunday loading
-                if (!dayAfterPH) {
-                  if(dailyUnits < 8.5){
-                    sundayLoading(shiftFinishUnits);
-                  }
-                  if(dailyUnits >= 8.5){
-                    sundayLoading(shiftLength - Math.round(shiftStartUnits));
-                  }
-                }
-                if (dayAfterPH) {
-                  if(dailyUnits < 8.5){
-                    PHsunday(shiftFinishUnits)
-                  }
-                  if(dailyUnits >= 8.5){
-                    PHsunday(shiftLength - Math.round(shiftStartUnits));
-                  }
-                }
-              }
-              // public holiday loading
-              if (publicHoliday) {
-                // weekend PH is 100%
-                if (dayAfterPH) {
-                  PHsunday(dailyUnits);
-                }
-                if(!dayAfterPH){
-                  if(dailyUnits < 8.5){
-                  PHsunday(shiftStartUnits);
-                  sundayLoading(shiftFinishUnits);
-                  }
-                  if(dailyUnits >= 8.5){
-                    PHsunday(shiftStartUnits);
-                  sundayLoading(shiftLength - Math.round(shiftStartUnits));
-                  }
-                }
-              }
-            }
-            //sun to mon
-            if (shiftDay === "Sunday") {
-              //200% to 100%
-              //add sunday time
-              if (dailyUnits + LB + LU + BU + extraKmAsUnits <= shiftLength) {
-                NormalPay(dailyUnits + LB + LU + BU + extraKmAsUnits);
-              }
-              //add monday time
-              if (
-                dailyUnits + LB + LU + BU + extraKmAsUnits > shiftLength &&
-                dailyUnits + LB + LU + BU + extraKmAsUnits < 11
-              ) {
-                // alert("B");
-                NormalPay(shiftLength);
-                OneHalfOT(
-                  dailyUnits + LU + BU + LB + extraKmAsUnits - shiftLength
-                );
-              }
-              if (dailyUnits + LB + LU + BU + extraKmAsUnits > 11) {
-                // alert("C");
-                NormalPay(shiftLength);
-                OneHalfOT(3);
-                DoubleOT(dailyUnits + LU + BU + LB + extraKmAsUnits - 11);
-              }
-              //if there is milage
-              if (milageBU > 0) {
-                //add penalty
-                milageBuildUp(milageBU);
-                //no milage penalty on sunday
-                //if milage is on the monday, add the penalty
-                if (milageUnits >= shiftStartUnits) {
-                  MilagePayment(milageOTUnits);
-                }
-              }
-              // if day isnt a PH
-              if (!publicHoliday) {
-                sundayLoading(LB + shiftStartUnits);
-                if (!dayAfterPH) {
-                  // if(dailyUnits < 8.5){
-                  //   afternoonPenalty(shiftFinishUnits);
-                  //   nightPenalty(shiftFinishUnits);
-                  // }
-                  // if(dailyUnits >= 8.5){
-                  //   afternoonPenalty(shiftLength - Math.round(shiftStartUnits));
-                  //   nightPenalty(shiftLength - Math.round(shiftStartUnits));
-                  // }
-                  specialLoadingPenalty();
-                }
-                if (dayAfterPH) {
-                  PHweekday(shiftFinishUnits);
-                  if(dailyUnits < 8.5){
-                    PHweekday(shiftFinishUnits);
-                  }
-                  if(dailyUnits >= 8.5){
-                    PHweekday(shiftLength - Math.round(shiftStartUnits));
-                  }
-                }
-              }
-
-              // if day IS a ph
-              if (publicHoliday) {
-                PHsunday(shiftStartUnits);
-                // weekend PH is 100%
-                if (dayAfterPH) {
-                  if(dailyUnits < 8.5){
-                    PHweekday(shiftFinishUnits);
-                  }
-                  if(dailyUnits >= 8.5){
-                    PHweekday(shiftLength - Math.round(shiftStartUnits));
-                  }
-                }
-                if(!dayAfterPH){
-                  if(dailyUnits < 8.5){
-                    afternoonPenalty(shiftFinishUnits);
-                  nightPenalty(shiftFinishUnits);
-                  }
-                  if(dailyUnits >= 8.5){
-                    afternoonPenalty(shiftLength - Math.round(shiftStartUnits));
-                  nightPenalty(shiftLength - Math.round(shiftStartUnits));
-                  }
-                  specialLoadingPenalty();
-                }
-              }
-            }
-          }
-        }
-        // THERE IS NO MORE SECURITY OR CAB
-        // securityAllownace();
-        // cabAllowance();
-        PHWorkAccrue();
-        //print working time and running total
-        // console.log(
-        //   daysWorkedCounter +
-        //     `: daily Units: ` +
-        //     rounded(dailyUnits + BU + LU + LB) +
-        //     `||  total Units: ` +
-        //     rounded(ordinaryUnits)
-        // );
-      } else {
-        //SICK
-        //WHAT HAPPENS TO PUBLIC HOLIDAY IF SICK??????
-        if (timeAsUnits[i][1] === "Sick") {
-          sickDay();
-        }
-        //HOL
-        if (timeAsUnits[i] === "Hol") {
-          HOLpayment();
-        }
-      }
-
-      //Drivers OT Bonus + Guards Wobod counter
-      if (overtime) {
-        OTdays++;
-        wobodArray.push([weekdays[i], dailyUnits, callOut]);
-      }
-
-      //reset daily counters
-      dailyUnits = 0;
-      BU = 0;
-      LU = 0;
-      LB = 0;
-      milageBU = 0;
-      milageOTUnits = 0;
-      extraKm = 0;
-      extraKmAsUnits = 0;
-      singleDay = true;
-      milageShift = false;
-      dayAfterPH = false;
-
-      payArray.push(dailyPayArray);
-      dailyPayArray = [];
+  for (let i = 0; i < 14; i++) { //for each day
+    
+    // console.log(payObj[i].day);
+        //display if its a day off
+    if(!!payObj[i].RDO){
+        payDiv.innerText += ` \n${payObj[i].day}:  DAY OFF\n`;
+        unitDiv.innerText += ` \n\n`;
+        rateDiv.innerText += `\n\n`;
+        amountDiv.innerText += ` \n\n`;
     }
-    // IF IT IS A DAY OFF
     else {
-      dailyPayArray = [];
-      // console.log("day off");
-      payDiv.innerText += ` \n${weekdays[i]}:  DAY OFF\n`;
-      unitDiv.innerText += ` \n\n`;
-      rateDiv.innerText += `\n\n`;
-      amountDiv.innerText += ` \n\n`;
+        //display the day
+        payDiv.innerText += ` \n${payObj[i].day}: \n`;
+        unitDiv.innerText += ` \n\n`;
+        rateDiv.innerText += `\n\n`;
+        amountDiv.innerText += ` \n\n`;
 
-      // PUBLIC HOLIDAY ON A DAY OFF
-      payPh = tableArray[i][7];
-      accruePh = tableArray[i][8];
-      if (accruePh || payPh) {
-        publicHoliday = true;
-      } else {
-        publicHoliday = false;
-      }
-      PHWorkAccrue();
-
-      payArray.push(dailyPayArray);
-      dailyPayArray = [];
+        //display normal hours pay
+        grossPay += NormalPay(payObj[i], payObj.payrate);
+        // console.log('normal: ' + grossPay);
+        grossPay += Overtime(payObj[i], payObj.payrate);
+        // console.log('ot: ' + grossPay);
+        grossPay += ExcessShift(payObj[i], payObj.payrate);
+        grossPay += MorningShiftPenalty(payObj[i]);
+        grossPay += AfternoonShiftPenalty(payObj[i]);
+        grossPay += NightShiftPenalty(payObj[i]);
+        grossPay += SpecialLoadingPenalty(payObj[i]);
+        grossPay += SaturdayLoading(payObj[i], payObj.payrate);
+        grossPay += SundayLoading(payObj[i], payObj.payrate);
+        grossPay += Hol(payObj[i], payObj.payrate);
+        grossPay += PublicHoliday(payObj[i], payObj.payrate);
+        grossPay += PublicHolidayLoading(payObj[i], payObj.payrate);
+        grossPay += CallOut(payObj[i], payObj.payrate);
+        grossPay += SickDay(payObj[i], payObj.payrate);
+        Wobod(payObj[i], payObj.payrate);
     }
   }
 
-  // THINGS THAT HAPPEN REGARDLESS OF THE DAY
-  adjustADO(); // DOES IT MATTER WHERE THE ADO IS IN THE FORTNIGHT??
-  guaranteePayment();
-  payWOBOD();
-  // NO MORE OT BONUS
-  // OTBonus();
+  grossPay += AdoAdjustment(payObj.longFortnight, payObj.payrate);
+  grossPay += GuaranteePayment(payObj);
 
-  //gross pay
-  for (let i = 0; i < payArray.length; i++) {
-    for (let j = 0; j < payArray[i].length; j++) {
-      GrossPay += payArray[i][j];
-    }
-    if (i === 14) {
-      GrossPay += payArray[i];
-    }
-  }
-  GrossPay += shortFall * payRate;
-  // console.log(GrossPay);
   payDiv.innerText += ` \n Gross Pay:\n`;
   unitDiv.innerText += ` \n\n`;
   rateDiv.innerText += `\n\n`;
-  amountDiv.innerText += ` \n  ${rounded(GrossPay)}   \n`;
+  amountDiv.innerText += ` \n  ${rounded(grossPay)}   \n`;
+    
+}
 
-  function morningPenalty(hours) {
-    if (Math.round(hours) >= 8) {
-      hours = 8;
+function LiftUp(rowObj){
+    if(!rowObj.timeWorked){
+        console.log('not a working day, so no lift up');
+        return false;
     }
-    if (startTimeActual >= 4 && startTimeActual <= 5.5) {
-      dailyPayArray.push(Math.round(hours) * EarlyMorningShiftPenalty);
-      payDiv.innerText += ` Morning Shift Dvrs/Grds Hrl: ......................................................................................\n`;
-      unitDiv.innerText += `${Math.round(hours)}: ...................................................................................................\n`;
-      rateDiv.innerText += `${EarlyMorningShiftPenalty}...................................................................................................\n`;
-      amountDiv.innerText += `${rounded(Math.round(hours) * EarlyMorningShiftPenalty)}\n`;
+    // LIFT UP IS start time and finish time actual are before rostered
+    let startsBefore = rowObj.actualStart < rowObj.rosteredStart;
+    if(!startsBefore){
+        console.log(rowObj.day)
+        console.log('shift starts later than rostered, no lift up');
+        return false;
     }
-  }
+    let finishesBefore = rowObj.actualFinish < rowObj.rosteredFinish;
+    
+    //if it doesnt finish earlier + doesnt finish next day + isnt suppose to finish next day
+    if(!finishesBefore && !rowObj.finishesNextDay && !rowObj.shouldFinishNextDay){ 
+        console.log(rowObj.day)
+        console.log('shift finishes later than rostered, no lift up');
+        return false;
+    }
 
-  function afternoonPenalty(hours) {
-    if (Math.round(hours) >= 8) {
-      hours = 8;
+    let liftUp = changeToMinutes(rowObj.rosteredFinish) - changeToMinutes(rowObj.actualFinish); //i.e actual 0200, rostered 0230 - lift up = 0.5
+    
+    //finishesBefore may be false. this may be due to a shift finishing the next day so check if its so
+    if(!finishesBefore && !!rowObj.shouldFinishNextDay){ //if it does finish the next day
+        // R0030 A2330
+        liftUp = (changeToMinutes(rowObj.rosteredFinish) + changeToMinutes('2400')) - changeToMinutes(rowObj.actualFinish);
     }
-    if (startTimeActual < 18 && finishTimeActual > 18 || startTimeActual < 18 && finishTimeActual < startTimeActual && (finishTimeActual + 24) > 18) {
-      dailyPayArray.push(Math.round(hours) * AfternoonShiftPenalty);
-      payDiv.innerText += `Afternoon Shift Dvrs/Grds Hrl: ......................................................................................\n`;
-      unitDiv.innerText += `${Math.round(hours)}: .................................................................................................................\n`;
-      rateDiv.innerText += `${AfternoonShiftPenalty}...................................................................................................\n`;
-      amountDiv.innerText += `${rounded(Math.round(hours) * AfternoonShiftPenalty)}\n`;
-    }
-  }
+    
+    return liftUp;
+}
 
-  function nightPenalty(hours) {
-    if (Math.round(hours) >= 8) {
-      hours = 8;
+function Layback(rowObj){
+    if(!rowObj.timeWorked){
+        console.log('not a working day, so no layback');
+        return false;
     }
-    if (startTimeActual <= 3.98 || startTimeActual >= 18) {
-      dailyPayArray.push(Math.round(hours) * nightShiftPenalty);
-      payDiv.innerText += `Night Shift Dvrs/Grds Hrl: ......................................................................................\n`;
-      unitDiv.innerText += `${Math.round(hours)}: .................................................................................................................\n`;
-      rateDiv.innerText += `${nightShiftPenalty}...................................................................................................\n`;
-      amountDiv.innerText += `${rounded(Math.round(hours) * nightShiftPenalty)}\n`;
+    // if actual start time > rostered start time && actual finish time > rostered finish time eg. 
+    let startsAfter = rowObj.actualStart > rowObj.rosteredStart;
+    if(!startsAfter){
+        console.log('shift starts before rostered, no layback');
+        return false;
     }
-  }
+    let finishesAfter = rowObj.actualFinish > rowObj.rosteredFinish;
+    //if it finishes earlier + doesnt finish next day
+    if(!finishesAfter && !rowObj.finishesNextDay){ 
+        console.log('shift finishes later than rostered, no layback');
+        return false;
+    }
 
-  function specialLoadingPenalty() {
-    if (
-      (startTimeActual >= 1.02 && startTimeActual <= 3.98) ||
-      (finishTimeActual >= 1.02 && finishTimeActual <= 3.98)
-      //WHAT IF THE SHIFT STARTS ON A NON PH AND FINISHES ON A PH IN THE SPECIAL LOADING PERIOD?
-    ) {
-      dailyPayArray.push(specialLoading);
-      payDiv.innerText += `Special Loading Drvs/Grds: ......................................................................................\n`;
-      unitDiv.innerText += `1: .............................................................................................................\n`;
-      rateDiv.innerText += `${specialLoading}...................................................................................................\n`;
-      amountDiv.innerText += `${specialLoading}\n`;
+    let layback = changeToMinutes(rowObj.actualStart) - changeToMinutes(rowObj.rosteredStart); //i.e actual 0300, rostered 0230 - layback = 0.5
+    
+    //finishesAfter may be false. this may be due to a shift finishing the next day so check if its so
+    if(!finishesAfter && !!rowObj.finishesNextDay){ //if it does finish the next day
+        // R2330 A0030
+        layback = (changeToMinutes(rowObj.actualStart) + changeToMinutes('2400')) - changeToMinutes(rowObj.rosteredStart);
     }
-  }
+    
+    // console.log('layback : ' + layback);
+    return layback;
 
-  function payWOBOD() {
-    if (role === "Guard" || role ==="Driver") {
-      for (let i = 0; i < sickDays; i++) {
-        wobodArray.shift();
-      }
-      //no callout - wobod = 48%
-      wobodArray.forEach((wobodShift) => {
-        let co = wobodShift[2];
-        if (!co) {
-          // console.log(
-          //   `wobod payment next fortnite at 48% of ${
-          //     wobodShift[0]
-          //   }'s shift: ${rounded(wobodShift[1] * payRate * WOBOD)}`
-          // );
-          payDiv.innerText += `\nNEXT FORTNIGHT WOBOD PAYMENT: ...............................................................................................................................\n`;
-          unitDiv.innerText += ` \n@${wobodShift[0]}......................................................................................................................................................\n`;
-          rateDiv.innerText += `\n48%...................................................................................................\n`;
-          amountDiv.innerText += ` \n${rounded(
-            wobodShift[1] * payRate * WOBOD
-          )}\n`;
-        }
-        // with callout - wobod = 23%
-        else {
-          // console.log(
-          //   `wobod payment next fortnite at 23% of ${
-          //     wobodShift[0]
-          //   }'s shift: ${rounded(wobodShift[1] * payRate * 0.23)}`
-          // );
-          payDiv.innerText += `\nNEXT FORTNIGHT WOBOD PAYMENT: ...............................................................................................................................\n`;
-          unitDiv.innerText += ` \n@${wobodShift[0]}......................................................................................................................................................\n`;
-          rateDiv.innerText += `\n23%...................................................................................................\n`;
-          amountDiv.innerText += ` \n${rounded(
-            wobodShift[1] * payRate * 0.23
-          )}\n`;
-        }
-      });
+}
+
+function Buildup(rowObj){
+    if(!rowObj.timeWorked){
+        console.log('not a working day, so no buildup');
+        return false;
     }
-  }
 
-  function OTBonus() {
-    if (role === "Driver") {
-      if (OTdays - sickDays > 0 && OTdays - sickDays < 4) {
-        for (let i = 0; i < bonusOtShifts.length; i++) {
-          if (OTdays === bonusOtShifts[i]) {
-            // console.log(
-            //   `Overtime Days: ${OTdays} - Days Sick: ${sickDays} = ${
-            //     OTdays - sickDays
-            //   }. OT Bonus = ${bonusOtRates[i]}`
-            // );
-            payDiv.innerText += `Overtime Days: ${OTdays} - Days Sick: ${sickDays} =...............................................................................................................................\n`;
-            unitDiv.innerText += ` \n${
-              OTdays - sickDays
-            }......................................................................................................................................................\n`;
-            rateDiv.innerText += `\n${bonusOtRates[i]}...................................................................................................\n`;
-            amountDiv.innerText += ` \n${bonusOtRates[i]}\n`;
-          }
-        }
-      } else if (OTdays - sickDays >= 4) {
-        // console.log(
-        //   `Overtime Days: ${OTdays} - Days Sick: ${sickDays} = ${
-        //     OTdays - sickDays
-        //   }. OT Bonus = ${bonusOtRates[2]}`
-        // );
-        payDiv.innerText += `Overtime Days: ${OTdays} - Days Sick: ${sickDays} =...............................................................................................................................\n`;
-        unitDiv.innerText += ` \n${
-          OTdays - sickDays
-        }......................................................................................................................................................\n`;
-        rateDiv.innerText += `\n${bonusOTRates[2]}...................................................................................................\n`;
-        amountDiv.innerText += ` \n${bonusOtRates[2]}\n`;
-      } else {
-        // console.log(
-        //   `Overtime Days: ${OTdays} - Days Sick: ${sickDays} = ${
-        //     OTdays - sickDays
-        //   }. OT Bonus = $0.00`
-        // );
-      }
+    //check if start time is equal to rostered
+    //check if start time is later than rostered
+    let startDiff = changeToMinutes(rowObj.actualStart) - changeToMinutes(rowObj.rosteredStart);
+    
+    //check if finish time is equal to rostered
+    //check if finish time is less than rostered 
+    let finishDiff = changeToMinutes(rowObj.rosteredFinish) - changeToMinutes(rowObj.actualFinish);
+    
+    //if shift is rostered to finish next day but doesnt then calculate the difference
+    if(rowObj.shouldFinishNextDay && !rowObj.finishesNextDay){
+        finishDiff = (changeToMinutes(rowObj.rosteredFinish) + changeToMinutes('2400')) - changeToMinutes(rowObj.actualFinish);
     }
-  }
 
-  function guaranteePayment() {
-    if (ordinaryUnits + offsetUnits >= baseHours - timeLost) {
-      //shortfall is the units
-      // console.log(
-      //   `worked hours: ${rounded(
-      //     ordinaryUnits + offsetUnits
-      //   )}.  Base hours: ${baseHours} - Time Lost: ${timeLost} = ${
-      //     baseHours - timeLost
-      //   }  Guarantee payment: None!`
-      // );
-      payArray.push(0);
+
+    if(startDiff == 0 && finishDiff == 0 || startDiff < 0 || finishDiff < 0){
+        console.log('no buildup');
+        return false;
+    }
+
+    let buildup = startDiff + finishDiff;
+    console.log(buildup);
+    return buildup;
+}
+
+function NormalPay(rowObj, payRate){
+    if(!rowObj.timeWorked){
+        return 0;
+    }
+//shift length up to 8 hours * payRate
+    let hours = rowObj.totalWorked;
+    if (hours >= 8) {
+        hours = 8;
+    }
+
+    if(!!rowObj.excessDayNormal || !!rowObj.excessDayDouble){
+        return 0;
+    }
+
+
+    if (!!rowObj.PH) {
+        payDiv.innerText += ` Public Holiday Worked: ....................................................................................................\n`;
     } else {
-      shortFall = rounded(baseHours + timeLost - ordinaryUnits - offsetUnits);
-      // console.log(`ordinary units: ${ordinaryUnits}`);
-      // console.log(`Offset Units: ${offsetUnits}`);
-      // console.log(`TimeLost: ${timeLost}`);
-      // console.log(`shortfall: ${shortFall}`);
-      // console.log(
-      //   `worked hours: ${rounded(
-      //     ordinaryUnits + offsetUnits
-      //   )}.  Base hours: ${baseHours} - Time Lost: ${timeLost} = ${
-      //     baseHours + timeLost
-      //   }.  Guarantee payment: ${rounded(
-      //     shortFall * payRate
-      //   )} for ${shortFall} hours shortfall!`
-      // );
-      payArray.push(rounded(shortFall * payRate));
-      payDiv.innerText += ` \nGuarantee: ...............................................................................................................................\n`;
-      unitDiv.innerText += ` \n${shortFall}: ......................................................................................................................................................\n`;
-      rateDiv.innerText += `\n${payRate}...................................................................................................\n`;
-      amountDiv.innerText += ` \n${rounded(shortFall * payRate)}\n`;
+        payDiv.innerText += ` Ordinary Hours: ....................................................................................................\n`;
     }
-  }
-
-  function adjustADO() {
-    if (adoWeek === "long") {
-      payArray.push(rounded(adoAdjustment * -1));
-      payDiv.innerText += ` \nADO Adjustment: .............................................................................................................................................\n`;
-      unitDiv.innerText += ` \n-4: ....................................................................................................................................................................\n`;
-      rateDiv.innerText += `\n${payRate}...................................................................................................\n`;
-      amountDiv.innerText += ` \n${rounded(adoAdjustment * -1)}\n`;
-    } else {
-      payArray.push(rounded(adoAdjustment));
-      payDiv.innerText += ` \nADO Adjustment: ...............................................................................................................................\n`;
-      unitDiv.innerText += ` \n4: ......................................................................................................................................................\n`;
-      rateDiv.innerText += `\n${payRate}...................................................................................................\n`;
-      amountDiv.innerText += ` \n${rounded(adoAdjustment)}\n`;
-    }
-  }
-
-  function PHWorkAccrue() {
-    // payout public holiday
-    if (publicHoliday && !accruePh) {
-      dailyPayArray.push(rounded(shiftLength * payRate));
-      payDiv.innerText += `Public Holiday Paid: ......................................................................................\n`;
-      unitDiv.innerText += `${shiftLength}: .........................................................................................................................................\n`;
-      rateDiv.innerText += `${payRate}...................................................................................................\n`;
-      amountDiv.innerText += `${rounded(shiftLength * payRate)}\n`;
-    }
-    // accrue public holiday, doesnt get paid.
-    if (accruePh) {
-      // console.log(
-      //   "public holiday accrued up to 8 a year + 1 non proclaimed PH aka picnic day"
-      // );
-      payDiv.innerText += ` Public Holiday Accrued  \n`;
-      unitDiv.innerText += `8\n`;
-      rateDiv.innerText += `\n`;
-      amountDiv.innerText += `\n`;
-    }
-  }
-
-  function HOLpayment() {
-    // console.log(`HOL - public holiday not required`);
-    dailyPayArray.push(rounded(shiftLength * payRate));
-
-    payDiv.innerText += `HOL: ............................................................................................................................................................\n`;
-    unitDiv.innerText += `${shiftLength}: .......................................................................................................................................................\n`;
-    rateDiv.innerText += `${payRate}...................................................................................................\n`;
-    amountDiv.innerText += `${rounded(shiftLength * payRate)}\n`;
-
-    if (daysWorkedCounter <= ordinaryDays) {
-      ordinaryUnits += rounded(shiftLength);
-    //   console.log(
-    //     "OT@200%: " + rounded(ordinaryUnits) + " - " + rounded(shiftLength)
-    //   );
-    }
-  }
-
-  function sickDay() {
-    timeLost += dailyUnits;
-    sickDays++;
-    // console.log(`sick day - lost ${dailyUnits} of ordinary Time`);
-    dailyPayArray.push(rounded(shiftLength * payRate));
-
-    payDiv.innerText += `Sick: ..............................................................................................................................................\n`;
-    unitDiv.innerText += `${shiftLength}: .........................................................................................................................................\n`;
-    rateDiv.innerText += `${payRate}...................................................................................................\n`;
-    amountDiv.innerText += `${rounded(shiftLength * payRate)}\n`;
-  }
-
-  function cabAllowance() {
-    if (cab) {
-      dailyPayArray.push(cabEtrAllowance);
-      payDiv.innerText += `Elec Guards Spl Shift All: ......................................................................................\n`;
-      unitDiv.innerText += `1: ...........................................................................................................................\n`;
-      rateDiv.innerText += `${cabEtrAllowance}...................................................................................................\n`;
-      amountDiv.innerText += `${cabEtrAllowance}\n`;
-    }
-  }
-
-  function securityAllownace() {
-    if (security) {
-      dailyPayArray.push(securityAllowance);
-      payDiv.innerText += `Guards Security Allow: ......................................................................................\n`;
-      unitDiv.innerText += `1: ...........................................................................................................................\n`;
-      rateDiv.innerText += `${securityAllowance}...................................................................................................\n`;
-      amountDiv.innerText += `${securityAllowance}\n`;
-    }
-  }
-
-  function PHweekday(hours) {
-    if (rounded(hours) >= shiftLength) {
-      hours = shiftLength;
-    }
-
-    dailyPayArray.push(rounded(hours * payRate * satLoading));
-
-    payDiv.innerText += ` PH Loading @ 50%: ......................................................................................\n`;
-    unitDiv.innerText += `${Math.round(
-      hours
-    )}: .................................................................................................................\n`;
-    rateDiv.innerText += `${payRate * satLoading}...................................................................................................\n`;
-    amountDiv.innerText += `${rounded(
-      Math.round(hours) * payRate * satLoading
-    )}\n`;
-  }
-
-  function PHsunday(hours) {
-    if (Math.round(hours) >= shiftLength) {
-      hours = shiftLength;
-    }
-    dailyPayArray.push(rounded(Math.round(hours) * payRate * sunLoading));
-    payDiv.innerText += ` PH Loading @ 100%: ......................................................................................\n`;
-    unitDiv.innerText += `${Math.round(hours)}: .................................................................................................................\n`;
-    rateDiv.innerText += `${payRate * sunLoading}...................................................................................................\n`;
-    amountDiv.innerText += `${rounded(Math.round(hours) * payRate * sunLoading)}\n`;
-  }
-
-  function saturdayLoading(hours) {
-    if (rounded(Math.round(hours)) >= shiftLength) {
-      hours = shiftLength;
-    }
-    // dailyPayArray.push(rounded(Math.round(hours) * payRate * satLoading));
-    dailyPayArray.push(rounded(hours * payRate * satLoading));
-    payDiv.innerText += ` Loading @ 50% Saturday: ......................................................................................\n`;
-    unitDiv.innerText += `${
-      hours
-    }: ...........................................................................................................................\n`;
-    rateDiv.innerText += `${payRate * satLoading}...................................................................................................\n`;
-    amountDiv.innerText += `${rounded(
-      hours * payRate * satLoading
-    )}\n`;
-  }
-
-  function sundayLoading(hours) {
-    if (rounded(Math.round(hours)) >= shiftLength) {
-      hours = shiftLength;
-    }
-    // dailyPayArray.push(rounded(Math.round(hours) * payRate * sunLoading));
-    dailyPayArray.push(rounded(hours * payRate * sunLoading));
-    payDiv.innerText += ` Loading @ 100% Sunday: ......................................................................................\n`;
-    unitDiv.innerText += `${
-      hours
-    }: .................................................................................................................\n`;
-    rateDiv.innerText += `${payRate * sunLoading}...................................................................................................\n`;
-    amountDiv.innerText += `${rounded(
-      hours * payRate * sunLoading
-    )}\n`;
-  }
-
-  function excessWeekday(hours) {
-    if (hours < 11) {
-      dailyPayArray.push(rounded(hours * payRate * weekdayOT));
-
-      payDiv.innerText += ` Overtime @ 150%: ........................................................................................ \n`;
-      unitDiv.innerText += ` ${rounded(
+    unitDiv.innerText += `  ${rounded(
         hours
-      )}: ........................................................................................................................\n`;
-      rateDiv.innerText += `${payRate*weekdayOT}...................................................................................................\n`;
-      amountDiv.innerText += ` ${rounded(hours * payRate * weekdayOT)}\n`;
-    }
-    if (hours > 11) {
-      //up to 11 hours is 150%
-      dailyPayArray.push(rounded(11 * payRate * weekdayOT));
-
-      payDiv.innerText += ` Overtime @ 150%: ................................................................................................  \n`;
-      unitDiv.innerText += ` ${rounded(
-        11
-      )}: ...................................................................................................................................... \n`;
-      rateDiv.innerText += `${payRate * weekdayOT}...................................................................................................\n`;
-      amountDiv.innerText += ` ${rounded(11 * payRate * weekdayOT)}   \n`;
-      // over 11 hours is 200%
-      dailyPayArray.push(rounded((hours - 11) * payRate * weekendOT));
-
-      payDiv.innerText += ` Overtime @ 200%: .................................................................................................  \n`;
-      unitDiv.innerText += ` ${rounded(
-        hours - 11
-      )}: ...................................................................................................................................... \n`;
-      rateDiv.innerText += `${payRate * weekdayOT}...................................................................................................\n`;
-      amountDiv.innerText += `  ${rounded(
-        (hours - 11) * payRate * weekdayOT
-      )}   \n`;
-    }
-  }
-
-  function excessWeekend(hours) {
-    dailyPayArray.push(rounded(hours * payRate * weekendOT));
-
-    payDiv.innerText += ` Overtime @ 200%: .................................................................................................  \n`;
-    unitDiv.innerText += ` ${rounded(
-      hours
-    )}: ...................................................................................................................................... \n`;
-    rateDiv.innerText += `${payRate * weekendOT}...................................................................................................\n`;
-    amountDiv.innerText += `${rounded(hours * payRate * weekendOT)}  \n`;
-  }
-
-  function milageBuildUp(milageBU) {
-    dailyPayArray.push(rounded(milageBU * payRate));
-    payDiv.innerText += `209km passed at ${Math.trunc(milagePassedAt)}'${Math.round(
-      (milagePassedAt - Math.trunc(milagePassedAt)) * 60
-    )} - Buildup: ...............................................................................................................  \n`;
-    unitDiv.innerText += `  ${rounded(
-      milageBU
-    )}: .................................................................................................................................................... \n`;
-    rateDiv.innerText += `${payRate}...................................................................................................\n`;
-    amountDiv.innerText += `${rounded(milageBU * payRate)}   \n`;
-  }
-
-  function ApplyCallOut(hours) {
-    if (hours > shiftLength) {
-      hours = shiftLength;
-    }
-
-    dailyPayArray.push(rounded(hours * payRate * callOutPenalty));
-    payDiv.innerText += ` Callout @ 25%: ............................................................................................ \n`;
-    unitDiv.innerText += ` ${hours}: .............................................................................................................................\n`;
-    rateDiv.innerText += `${payRate * callOutPenalty}...................................................................................................\n`;
-    amountDiv.innerText += `${rounded(hours * payRate * callOutPenalty)} \n`;
-  }
-
-  function MilagePayment(milageOTUnits) {
-    dailyPayArray.push(rounded(milageOTUnits * payRate * weekdayOT));
-    payDiv.innerText += ` Milage payment 209k's: ..................................................................................\n`;
-    unitDiv.innerText += ` ${rounded(milageOTUnits)}: ................................................................................................................................... \n`;
-    rateDiv.innerText += `${payRate * weekendOT}...................................................................................................\n`;
-    amountDiv.innerText += `${rounded(milageOTUnits * payRate * weekdayOT)}\n`;
-  }
-
-  function DoubleOT(hours) {
-    dailyPayArray.push(rounded(hours * payRate * weekendOT));
-    //print the details
-    payDiv.innerText += ` Sched OT 200%: ............................................................................................ \n`;
-    unitDiv.innerText += ` ${rounded(
-      hours
-    )}: ...........................................................................................................................................\n`;
-    rateDiv.innerText += `${payRate * weekendOT}...................................................................................................\n`;
-    amountDiv.innerText += ` ${rounded(hours * payRate * weekendOT)}  \n`;
-
-    //CALCULATE ORDINARY TIME
-    //@200% its equal in 1:1 ratio
-    if (daysWorkedCounter <= ordinaryDays) {
-      ordinaryUnits += rounded(hours);
-      // console.log(
-      //   "OT@200%: " + rounded(ordinaryUnits) + " - " + rounded(hours)
-      // );
-    }
-  }
-
-  function OneHalfOT(hours) {
-    dailyPayArray.push(rounded(hours * payRate * weekdayOT));
-    //print the details
-    payDiv.innerText += ` Sched OT 150%: ............................................................................................ \n`;
-    unitDiv.innerText += ` ${rounded(
-      hours
-    )}: .............................................................................................................................\n`;
-    rateDiv.innerText += `${payRate * weekdayOT}...................................................................................................\n`;
-    amountDiv.innerText += `${rounded(hours * payRate * weekdayOT)} \n`;
-    //CALCULATE ORDINARY TIME
-    //@150% its half the OT time
-    if (daysWorkedCounter <= ordinaryDays) {
-      ordinaryUnits += rounded(hours / 2);
-      // console.log(
-      //   "OT@100%: " + rounded(ordinaryUnits) + " - " + rounded(hours / 2)
-      // );
-    }
-  }
-
-  function NormalPay(hours) {
-    if (hours >= shiftLength) {
-      hours = shiftLength;
-    }
-    //milage eg 7'30"
-    dailyPayArray.push(rounded(hours * payRate));
-    if (publicHoliday) {
-      payDiv.innerText += ` Public Holiday Worked: ....................................................................................................\n`;
-    } else {
-      payDiv.innerText += ` Ordinary Hours: ....................................................................................................\n`;
-    }
-    unitDiv.innerText += `  ${rounded(
-      hours
     )}: ...........................................................................................................................\n`;
     rateDiv.innerText += `${payRate}...................................................................................................\n`;
     amountDiv.innerText += ` ${rounded(hours * payRate)}\n`;
-  }
-
-  function shiftWithOT(hours) {
-    //8 hours to normal pay
-    NormalPay(hours);
-
-    //anything worked over 8 is scheduled OT,
-    //weekend or PH is 200%
-    if (shiftDay === "Saturday" || shiftDay === "Sunday" || publicHoliday) {
-      DoubleOT(hours);
+    return parseFloat(rounded(hours * payRate));
+    
+}
+    
+function Overtime(rowObj, payRate){
+    if(!rowObj.timeWorked){
+        return 0;
     }
-    //weekday is 150%;
-    if (shiftDay !== "Saturday" && shiftDay !== "Sunday" && !publicHoliday) {
-      OneHalfOT(hours);
-    }
-    // call out on weekdays and non PH only
-    if (callOut && shiftDay !== "Saturday" && shiftDay !== "Sunday") {
-      ApplyCallOut(shiftLength);
-    }
-  }
 
-  function shiftWithoutOT(hours) {
-    NormalPay(hours);
-
-    if (callOut && shiftDay !== "Saturday" && shiftDay !== "Sunday") {
-      ApplyCallOut(hours);
+    if(!!rowObj.excessDayNormal || !!rowObj.excessDayDouble){
+        return 0;
     }
-  }
 
-  function ShiftPay(hours) {
-    if (daysWorkedCounter <= ordinaryDays) {
-      if (hours <= 8) {
-        NormalPay(hours);
-        if (callOut && shiftDay !== "Saturday" && shiftDay !== "Sunday") {
-          ApplyCallOut(hours);
+    let hours = rowObj.totalWorked;
+    
+    if( hours <= 8){
+        return 0;
+    }
+    if (hours > 8) {
+        hours = parseFloat(rounded(hours - 8));
+    }
+    
+    //mon-fri: normal shift over 8 hours is paid at 150%
+    //if its a PH, overtime is paid at 200%;
+    //print the details
+    if(rowObj.day !== "sat" && rowObj.day !== "sun" && !rowObj.finishesNextDay){
+        payDiv.innerText += ` Sched OT 150%: ............................................................................................ \n`;
+        unitDiv.innerText += ` ${
+            hours
+        }: .............................................................................................................................\n`;
+        rateDiv.innerText += `${payRate * 1.5}...................................................................................................\n`;
+        amountDiv.innerText += `${rounded(hours * payRate * 1.5)} \n`;
+
+        return parseFloat(rounded(hours * payRate * 1.5));
+    }
+
+    //weekend: shift over 8 hours is paid at 200%;
+    //saturday PH is 200% max.
+    if(!rowObj.finishesNextDay && (rowObj.day == "sat" || rowObj.day == "sun")){
+        payDiv.innerText += ` Sched OT 200%: ............................................................................................ \n`;
+        unitDiv.innerText += ` ${rounded(
+            hours
+        )}: .............................................................................................................................\n`;
+        rateDiv.innerText += `${payRate * 1}...................................................................................................\n`;
+        amountDiv.innerText += `${rounded(hours * payRate * 2)} \n`;
+
+        return parseFloat(rounded(hours * payRate * 2));
+    }
+
+    //if the shift finishes the next day, find out what day it is and then add the appropriate overtime
+    if(!!rowObj.finishesNextDay){
+        //check what portion falls within the next day
+        // actualFinish change to units
+        let nextDayPortion = changeToUnits(rowObj.actualFinish);
+        // check if the overtime hours is less than nextDayPortion
+        if(hours < nextDayPortion){
+            // if less, OT is wholely in next day
+            if(rowObj.day == "fri" || rowObj.day == "sat"){
+                payDiv.innerText += ` Sched OT 200%: ............................................................................................ \n`;
+                unitDiv.innerText += ` ${rounded(
+                    hours
+                )}: .............................................................................................................................\n`;
+                rateDiv.innerText += `${payRate * 2}...................................................................................................\n`;
+                amountDiv.innerText += `${rounded(hours * payRate * 2)} \n`;
+
+                return parseFloat(rounded(hours * payRate * 2));
+            }
+            //   NEED TO CHECK THIS!!!!
+            //
+            //  IF ITS A SUNDAY OT AND FINISHES ON MONDAY IS THE OT AND ANY NEXT DAY PORTION PAID ON THE MONDAY RATES????
+            //
+            //
+            if(rowObj.day == "sun"){
+                payDiv.innerText += ` Sched OT 150%: ............................................................................................ \n`;
+            unitDiv.innerText += ` ${rounded(
+                hours
+            )}: .............................................................................................................................\n`;
+            rateDiv.innerText += `${payRate * 1.5}...................................................................................................\n`;
+            amountDiv.innerText += `${rounded(hours * payRate * 1.5)} \n`;
+
+            return parseFloat(rounded(hours * payRate * 1.5));
+            }
+        }
+        else {
+            // if more, OT is split
+            if(rowObj.day == "fri"){
+                //the friday portion
+                payDiv.innerText += ` Sched OT 150%: ............................................................................................ \n`;
+                unitDiv.innerText += ` ${rounded(
+                    hours - nextDayPortion
+                )}: .............................................................................................................................\n`;
+                rateDiv.innerText += `${payRate * 1.5}...................................................................................................\n`;
+                amountDiv.innerText += `${rounded((hours - nextDayPortion) * payRate * 1.5)} \n`;
+
+                //the saturday portion
+                payDiv.innerText += ` Sched OT 200%: ............................................................................................ \n`;
+                unitDiv.innerText += ` ${rounded(
+                    nextDayPortion
+                )}: .............................................................................................................................\n`;
+                rateDiv.innerText += `${payRate * 2}...................................................................................................\n`;
+                amountDiv.innerText += `${rounded((nextDayPortion) * payRate * 2)} \n`;
+
+                return parseFloat((rounded(hours - nextDayPortion) * payRate * 1.5) + (rounded((nextDayPortion) * payRate * 2)));
+            }
+            //   NEED TO CHECK THIS!!!!
+            //
+            //  IF ITS A SUNDAY OT AND FINISHES ON MONDAY IS THE OT AND ANY NEXT DAY PORTION PAID ON THE MONDAY RATES????
+            //
+            //
+            if(rowObj.day == "sun"){
+                //the sunday portion
+                payDiv.innerText += ` Sched OT 200%: ............................................................................................ \n`;
+                unitDiv.innerText += ` ${rounded(
+                    hours - nextDayPortion
+                )}: .............................................................................................................................\n`;
+                rateDiv.innerText += `${payRate * 2}...................................................................................................\n`;
+                amountDiv.innerText += `${rounded((hours - nextDayPortion) * payRate * 2)} \n`;
+
+                //the monday portion
+                payDiv.innerText += ` Sched OT 150%: ............................................................................................ \n`;
+                unitDiv.innerText += ` ${rounded(
+                    nextDayPortion
+                )}: .............................................................................................................................\n`;
+                rateDiv.innerText += `${payRate * 1.5}...................................................................................................\n`;
+                amountDiv.innerText += `${rounded((nextDayPortion) * payRate * 1.5)} \n`;
+
+                return parseFloat((rounded(hours - nextDayPortion) * payRate * 2) + (rounded((nextDayPortion) * payRate * 1.5)));
+            }
+        }
+    }
+
+
+}
+
+function ExcessShift(rowObj, payRate){
+    if(!rowObj.timeWorked){
+        return 0;
+    }
+
+    let hours = rowObj.timeWorkedInUnits;
+    //check the day. weekdays = 150%, saturday = 200%
+    //if weekday, check the hours worked, first 11 hours is 150%,
+    //after 11 hours is 200%
+    if(rowObj.excessDayNormal == undefined && rowObj.excessDayDouble == undefined){
+        return 0;
+    }
+
+    if(rowObj.day !== "sat"){
+        if (hours < 11) {   
+            payDiv.innerText += ` Overtime @ 150%: ........................................................................................ \n`;
+            unitDiv.innerText += ` ${rounded(
+              hours
+            )}: ........................................................................................................................\n`;
+            rateDiv.innerText += `${payRate * 1.5}...................................................................................................\n`;
+            amountDiv.innerText += ` ${rounded(hours * payRate * 1.5)}\n`;
+            return parseFloat(rounded(hours * payRate * 1.5));
+        }
+        if (hours > 11) {
+            //up to 11 hours is 150%
+            payDiv.innerText += ` Overtime @ 150%: ................................................................................................  \n`;
+            unitDiv.innerText += ` ${rounded(
+              11
+            )}: ...................................................................................................................................... \n`;
+            rateDiv.innerText += `${payRate * 1.5}...................................................................................................\n`;
+            amountDiv.innerText += ` ${rounded(11 * payRate * 1.5)}   \n`;
+
+            // over 11 hours is 200%
+            payDiv.innerText += ` Overtime @ 200%: .................................................................................................  \n`;
+            unitDiv.innerText += ` ${rounded(
+              hours - 11
+            )}: ...................................................................................................................................... \n`;
+            rateDiv.innerText += `${payRate * 2}...................................................................................................\n`;
+            amountDiv.innerText += `  ${rounded(
+              (hours - 11) * payRate * 2
+            )}   \n`;
+            return parseFloat((rounded(11 * payRate * 1.5)) + (rounded((hours - 11) * payRate * 2)));
+        }
+    }
+
+    if(rowObj.day == "sat"){
+        payDiv.innerText += ` Overtime @ 200%: .................................................................................................  \n`;
+        unitDiv.innerText += ` ${rounded(
+        hours
+        )}: ...................................................................................................................................... \n`;
+        rateDiv.innerText += `${payRate * 2}...................................................................................................\n`;
+        amountDiv.innerText += `${rounded(hours * payRate * 2)}  \n`;
+
+        return parseFloat(rounded(hours * payRate * 2));
+    }
+}
+
+function ExtraKMAsUnits(rowObj){
+    const extraKmTiers = [
+        16.093, 24.14, 32.187, 40.234, 48.281, 56.328, 64.375, 72.422, 80.469,
+        88.516, 96.563, 104.61, 112.657, 120.704, 128.751, 136.798, 144.845,
+        152.892,
+      ];
+      const extraKmTimesInUnits = [
+        0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0,
+        4.25, 4.5, 4.75, 5.0,
+      ];
+
+      
+      if(!rowObj.extraKM){
+          return 0;
+        }
+        
+        let extraKmAsUnits = 0.00;
+      if(!!rowObj.extraKM){
+        for (let i = 0; i < extraKmTiers.length; i++) {
+            //0 - 16.093kms
+            if (rowObj.extraKM <= extraKmTiers[i] && i === 0)
+              extraKmAsUnits = extraKmTimesInUnits[i];
+            //16.094 - 152.892
+            if (rowObj.extraKM > extraKmTiers[i - 1] && rowObj.extraKM <= extraKmTiers[i]) {
+              extraKmAsUnits = extraKmTimesInUnits[i];
+            }
+            //152.893 and over by 8.046 increments of 15 minutes
+            if (rowObj.extraKM > extraKmTiers[i] && i === 17) {
+              extraKmAsUnits = extraKmTimesInUnits[i];
+              //how many additional increments of 15 minutes
+              //Math.ceil()
+              // multiply by 15 mins or .25 units
+              let x = Math.ceil((rowObj.extraKM - extraKmTiers[i]) / 8.046) * 0.25;
+              extraKmAsUnits += x;
+            }
         }
       }
-      if (hours > 8) {
-        NormalPay(hours);
-        if (shiftDay === "Saturday" || shiftDay === "Sunday" || publicHoliday) {
-          DoubleOT(hours - shiftLength);
-        }
-        //weekday is 150%;
-        if (
-          shiftDay !== "Saturday" &&
-          shiftDay !== "Sunday" &&
-          !publicHoliday
-        ) {
-          OneHalfOT(hours - shiftLength);
-        }
-        // call out on weekdays and non PH only
-        if (callOut && shiftDay !== "Saturday" && shiftDay !== "Sunday") {
-          ApplyCallOut(shiftLength);
-        }
-      }
-    }
-  }
-};
 
-//rounds to 2 decimal places
-function rounded(pay) {
-  return Math.round((pay + Number.EPSILON) * 100) / 100;
+      return parseFloat(extraKmAsUnits);
+}
+
+function MorningShiftPenalty(rowObj){
+    if(rowObj.excessDayNormal || rowObj.excessDayDouble){
+        return 0;
+    }
+
+    if(!rowObj.timeWorked || rowObj.PH || rowObj.day == "sat" || rowObj.day == "sun" && !rowObj.finishesNextDay){
+        return 0;
+    }
+
+    let hours = Math.round(rowObj.totalWorked);
+    if(hours >= 8){
+        hours = 8;
+    }
+
+      if (changeToUnits(rowObj.actualStart) >= 4.00 && changeToUnits(rowObj.actualStart) <= 5.5) {
+        payDiv.innerText += ` Morning Shift Dvrs/Grds Hrl: ......................................................................................\n`;
+        unitDiv.innerText += `${hours}: ...................................................................................................\n`;
+        rateDiv.innerText += `${earlyMorningShiftPenalty}...................................................................................................\n`;
+        amountDiv.innerText += `${rounded(hours * earlyMorningShiftPenalty)}\n`;
+        return parseFloat(rounded(hours * earlyMorningShiftPenalty));
+      }
+
+      return 0.00;
+
+}
+
+function AfternoonShiftPenalty(rowObj){
+    if(rowObj.excessDayNormal || rowObj.excessDayDouble){
+        return 0;
+    }
+
+    if(!rowObj.timeWorked || rowObj.PH && !rowObj.finishesNextDay || rowObj.day == "sat" || rowObj.day == "sun"){
+        return 0;
+    }
+
+    let hours = Math.round(rowObj.totalWorked);
+    if(hours >= 8){
+        hours = 8;
+    }
+
+    if (changeToUnits(rowObj.actualStart) < 18 && changeToUnits(rowObj.actualFinish) > 18) {
+        payDiv.innerText += `Afternoon Shift Dvrs/Grds Hrl: ......................................................................................\n`;
+        unitDiv.innerText += `${hours}: .................................................................................................................\n`;
+        rateDiv.innerText += `${afternoonShiftPenalty}...................................................................................................\n`;
+        amountDiv.innerText += `${rounded(hours * afternoonShiftPenalty)}\n`;
+        return parseFloat(rounded(hours * afternoonShiftPenalty));
+    }
+
+    if( changeToUnits(rowObj.actualStart) < 18 && rowObj.finishesNextDay){
+        let nextDayPortion = changeToUnits(rowObj.actualFinish);
+        let previousDayPortion = rowObj.timeWorkedInUnits - nextDayPortion;
+        let payablePortion = 0;
+
+        if(previousDayPortion >= 8){
+            payablePortion = 8;
+        }
+        if(previousDayPortion < 8){
+            payablePortion = Math.round(previousDayPortion);
+        }
+
+        payDiv.innerText += `Afternoon Shift Dvrs/Grds Hrl: ......................................................................................\n`;
+        unitDiv.innerText += `${payablePortion}: .................................................................................................................\n`;
+        rateDiv.innerText += `${afternoonShiftPenalty}...................................................................................................\n`;
+        amountDiv.innerText += `${rounded(payablePortion * afternoonShiftPenalty)}\n`;
+        return parseFloat(rounded(payablePortion * afternoonShiftPenalty));
+    }
+
+      return 0.00;
+}
+
+function NightShiftPenalty(rowObj){
+    if(rowObj.excessDayNormal || rowObj.excessDayDouble){
+        return 0;
+    }
+
+    if(!rowObj.timeWorked || rowObj.PH && !rowObj.finishesNextDay || rowObj.day == "sat" || rowObj.day == "sun"){
+        return 0;
+    }
+
+    let hours = Math.round(rowObj.totalWorked);
+    if(hours >= 8){
+        hours = 8;
+    }
+
+    if(rowObj.day == "fri" && !!rowObj.finishesNextDay && (changeToUnits(rowObj.actualStart) <= 3.98 || changeToUnits(rowObj.actualStart) >= 18)){
+        let nextDayPortion = changeToUnits(rowObj.actualFinish);
+        let previousDayPortion = rowObj.timeWorkedInUnits - nextDayPortion;
+
+        payDiv.innerText += `Night Shift Dvrs/Grds Hrl: ......................................................................................\n`;
+        unitDiv.innerText += `${previousDayPortion}: .................................................................................................................\n`;
+        rateDiv.innerText += `${nightShiftPenalty}...................................................................................................\n`;
+        amountDiv.innerText += `${rounded(previousDayPortion * nightShiftPenalty)}\n`;
+        return parseFloat(rounded(previousDayPortion * nightShiftPenalty));
+    }
+
+    if (changeToUnits(rowObj.actualStart) <= 3.98 || changeToUnits(rowObj.actualStart) >= 18) {
+        payDiv.innerText += `Night Shift Dvrs/Grds Hrl: ......................................................................................\n`;
+        unitDiv.innerText += `${hours}: .................................................................................................................\n`;
+        rateDiv.innerText += `${nightShiftPenalty}...................................................................................................\n`;
+        amountDiv.innerText += `${rounded(hours * nightShiftPenalty)}\n`;
+        return parseFloat(rounded(hours * nightShiftPenalty));
+    }
+
+    return 0.00;
+}
+
+/*********************************************************************
+
+NEED TO CHECK IF SPECIAL LOADING IS PAID IF IT FINISHES ON A SATURDAY OR A PH
+
+*********************************************************************/
+function SpecialLoadingPenalty(rowObj){
+    if(rowObj.excessDayNormal || rowObj.excessDayDouble){
+        return 0;
+    }
+
+    if(!rowObj.timeWorked || rowObj.PH && !rowObj.finishesNextDay){
+        return 0;
+    }
+
+    if(rowObj.day == "sun" && rowObj.finishesNextDay == undefined || rowObj.day == "sat" || rowObj.day == "fri" && !!rowObj.finishesNextDay){
+        return 0;
+    }
+
+    if (
+        (changeToUnits(rowObj.actualStart) >= 1.02 && changeToUnits(rowObj.actualStart) <= 3.98) ||
+        (changeToUnits(rowObj.actualFinish) >= 1.02 && changeToUnits(rowObj.actualFinish) <= 3.98)
+        //WHAT IF THE SHIFT STARTS ON A NON PH AND FINISHES ON A PH IN THE SPECIAL LOADING PERIOD?
+      ) {
+        payDiv.innerText += `Special Loading Drvs/Grds: ......................................................................................\n`;
+        unitDiv.innerText += `1: .............................................................................................................\n`;
+        rateDiv.innerText += `${specialLoading}...................................................................................................\n`;
+        amountDiv.innerText += `${specialLoading}\n`;
+        return parseFloat(specialLoading);
+      }
+
+      return 0;
+}
+
+function SaturdayLoading(rowObj, payRate){
+    //if its an excess day, exit
+    if(rowObj.excessDayNormal || rowObj.excessDayDouble){
+        return 0;
+    }
+
+    //if its not a worked day, exit
+    if(!rowObj.timeWorked){
+        return 0;
+    }
+
+    //if its a saturday PH, exit
+    if(rowObj.day == "sat" && !!rowObj.PH){
+        return 0;
+    }
+
+    //if it finishes the next day and the day isnt friday or saturday
+    if(rowObj.finishesNextDay && rowObj.day !== "fri" && rowObj.day !== "sat"){
+        return 0;
+    }
+
+    //if it doesnt finish the next day and the day isnt saturday
+    if(rowObj.finishesNextDay == undefined && rowObj.day !== "sat"){
+        return 0;
+    }
+
+    let hours = Math.round(rowObj.totalWorked);
+    if (hours >= 8) {
+        hours = 8;
+    }
+      
+    if(rowObj.day == "sat" && !rowObj.finishesNextDay){
+        payDiv.innerText += ` Loading @ 50% Saturday: ......................................................................................\n`;
+        unitDiv.innerText += `${
+        rounded(hours)
+        }: ...........................................................................................................................\n`;
+        rateDiv.innerText += `${payRate * 0.5}...................................................................................................\n`;
+        amountDiv.innerText += `${rounded(
+            hours * payRate * 0.5
+        )}\n`;
+
+        return parseFloat(rounded(hours * payRate * 0.5));
+    }
+
+    if(rowObj.day == "sat" && rowObj.finishesNextDay){
+        let nextDayPortion = changeToUnits(rowObj.actualFinish);
+        let previousDayPortion = rounded(rowObj.timeWorkedInUnits - nextDayPortion);
+
+        if(rowObj.timeWorkedInUnits < 8){
+            payDiv.innerText += ` Loading @ 50% Saturday: ......................................................................................\n`;
+            unitDiv.innerText += `${
+            previousDayPortion
+            }: ...........................................................................................................................\n`;
+            rateDiv.innerText += `${payRate * 0.5}...................................................................................................\n`;
+            amountDiv.innerText += `${rounded(
+                previousDayPortion * payRate * 0.5
+            )}\n`;
+
+            return parseFloat(rounded(previousDayPortion * payRate * 0.5));
+        }
+        if(rowObj.timeWorkedInUnits > 8){
+            let payablePortion = 0;
+            if(previousDayPortion > 8){
+                payablePortion = 8;
+            }
+            if(previousDayPortion < 8){
+                payablePortion = Math.round(previousDayPortion);
+            }
+
+            payDiv.innerText += ` Loading @ 50% Saturday: ......................................................................................\n`;
+            unitDiv.innerText += `${
+            payablePortion
+            }: ...........................................................................................................................\n`;
+            rateDiv.innerText += `${payRate * 0.5}...................................................................................................\n`;
+            amountDiv.innerText += `${rounded(
+                payablePortion * payRate * 0.5
+            )}\n`;
+
+            return parseFloat(rounded(payablePortion * payRate * 0.5));
+        }
+    }
+
+    if(rowObj.finishesNextDay && rowObj.day == "fri"){
+        let nextDayPortion = changeToUnits(rowObj.actualFinish);
+        if(rowObj.timeWorkedInUnits < 8){
+            payDiv.innerText += ` Loading @ 50% Saturday: ......................................................................................\n`;
+            unitDiv.innerText += `${
+            rounded(nextDayPortion)
+            }: ...........................................................................................................................\n`;
+            rateDiv.innerText += `${payRate * 0.5}...................................................................................................\n`;
+            amountDiv.innerText += `${rounded(
+                nextDayPortion * payRate * 0.5
+            )}\n`;
+
+            return parseFloat(rounded(nextDayPortion * payRate * 0.5));
+        }
+        if(rowObj.timeWorkedInUnits > 8){
+            let previousDayPortion = rowObj.timeWorkedInUnits - nextDayPortion;
+            let payablePortion = 8 - previousDayPortion;
+
+            payDiv.innerText += ` Loading @ 50% Saturday: ......................................................................................\n`;
+            unitDiv.innerText += `${
+            rounded(payablePortion)
+            }: ...........................................................................................................................\n`;
+            rateDiv.innerText += `${payRate * 0.5}...................................................................................................\n`;
+            amountDiv.innerText += `${rounded(
+                payablePortion * payRate * 0.5
+            )}\n`;
+
+            return parseFloat(rounded(payablePortion * payRate * 0.5));
+        }
+    }
+
+    return 0.00;
+}
+
+function SundayLoading(rowObj, payRate){
+    //exit if:
+    //if theres no time worked
+    //its a PH sunday
+    //job isnt a saturday that finishes the next day
+    //day isnt a sunday
+    if(rowObj.excessDayNormal || rowObj.excessDayDouble){
+        return 0;
+    }
+
+    if(!rowObj.timeWorked || rowObj.day == "sun" && rowObj.PH){
+        return 0;
+    }
+
+    if(rowObj.finishesNextDay && rowObj.day !== "sat" && rowObj.day !== "sun"){
+        return 0;
+    }
+
+    let hours = Math.round(rowObj.totalWorked);
+    if (hours >= 8) {
+        hours = 8;
+    }
+
+    if(rowObj.day == "sun" && !rowObj.finishesNextDay){
+        payDiv.innerText += ` Loading @ 100% Sunday: ......................................................................................\n`;
+        unitDiv.innerText += `${
+          hours
+        }: .................................................................................................................\n`;
+        rateDiv.innerText += `${payRate * 1}...................................................................................................\n`;
+        amountDiv.innerText += `${rounded(
+          hours * payRate * 1
+        )}\n`;
+
+        return parseFloat(rounded(hours * payRate * 1));
+    }
+
+    if(rowObj.day == "sun" && rowObj.finishesNextDay){
+        let nextDayPortion = changeToUnits(rowObj.actualFinish);
+        let previousDayPortion = rounded(rowObj.timeWorkedInUnits - nextDayPortion);
+
+        if(rowObj.timeWorkedInUnits < 8){
+            payDiv.innerText += ` Loading @ 100% Sunday: ......................................................................................\n`;
+            unitDiv.innerText += `${
+            previousDayPortion
+            }: ...........................................................................................................................\n`;
+            rateDiv.innerText += `${payRate * 1}...................................................................................................\n`;
+            amountDiv.innerText += `${rounded(
+                previousDayPortion * payRate * 1
+            )}\n`;
+
+            return parseFloat(rounded(previousDayPortion * payRate * 1));
+        }
+        if(rowObj.timeWorkedInUnits > 8){
+            let payablePortion = 0;
+            if(previousDayPortion > 8){
+                payablePortion = 8;
+            }
+            if(previousDayPortion < 8){
+                payablePortion = Math.round(previousDayPortion);
+            }
+
+            payDiv.innerText += ` Loading @ 100% Sunday: ......................................................................................\n`;
+            unitDiv.innerText += `${
+            payablePortion
+            }: ...........................................................................................................................\n`;
+            rateDiv.innerText += `${payRate * 1}...................................................................................................\n`;
+            amountDiv.innerText += `${rounded(
+                payablePortion * payRate * 1
+            )}\n`;
+
+            return parseFloat(rounded(payablePortion * payRate * 1));
+        }
+    }
+
+    if(rowObj.finishesNextDay && rowObj.day == "sat"){
+        let nextDayPortion = changeToUnits(rowObj.actualFinish);
+        
+        if(rowObj.timeWorkedInUnits <= 8){
+            payDiv.innerText += ` Loading @ 100% Sunday: ......................................................................................\n`;
+            unitDiv.innerText += `${
+            rounded(nextDayPortion)
+            }: .................................................................................................................\n`;
+            rateDiv.innerText += `${payRate * 1}...................................................................................................\n`;
+            amountDiv.innerText += `${rounded(
+                nextDayPortion * payRate * 1
+            )}\n`;
+
+            return parseFloat(rounded(nextDayPortion * payRate * 1));
+        }
+
+        if(rowObj.timeWorkedInUnits > 8){
+            let previousDayPortion = Math.round(rowObj.timeWorkedInUnits - nextDayPortion);
+            let payablePortion = 8 - previousDayPortion;
+
+            payDiv.innerText += ` Loading @ 100% Sunday: ......................................................................................\n`;
+            unitDiv.innerText += `${
+            rounded(payablePortion)
+            }: .................................................................................................................\n`;
+            rateDiv.innerText += `${payRate * 1}...................................................................................................\n`;
+            amountDiv.innerText += `${rounded(
+                payablePortion * payRate * 1
+            )}\n`;
+
+            return parseFloat(rounded(payablePortion * payRate * 1));
+        }
+    }
+
+    return 0;
+}
+
+function Hol(rowObj, payRate){
+    if(!rowObj.hol){
+        return 0;
+    }
+    //shiftlength * payRate for the day
+    payDiv.innerText += `HOL: ............................................................................................................................................................\n`;
+    unitDiv.innerText += `8: .......................................................................................................................................................\n`;
+    rateDiv.innerText += `${payRate}...................................................................................................\n`;
+    amountDiv.innerText += `${rounded(8 * payRate)}\n`;
+
+    return parseFloat(rounded(8 * payRate));
+}
+
+function PublicHolidayLoading(rowObj, payRate){ //normal hours + PH loading
+    if(rowObj.hol || !rowObj.timeWorked || !rowObj.PH){
+        return 0;
+    }
+
+    let hours = rowObj.timeWorkedInUnits;
+    if (Math.round(hours) >= 8) {
+        hours = 8;
+    }
+
+    if(rowObj.day !== "sat" && !rowObj.finishesNextDay || rowObj.day !== "sun" && !rowObj.finishesNextDay){
+        payDiv.innerText += ` PH Loading @ 50%: ......................................................................................\n`;
+        unitDiv.innerText += `${Math.round(
+            hours
+        )}: .................................................................................................................\n`;
+        rateDiv.innerText += `${payRate * 0.5}...................................................................................................\n`;
+        amountDiv.innerText += `${rounded(
+            hours * payRate * 0.5
+        )}\n`;
+
+        return parseFloat(rounded(hours * payRate * 0.5));
+    }
+
+    if(rowObj.day == "sat" && !rowObj.finishesNextDay || rowObj.day == "sun" && !rowObj.finishesNextDay){
+        payDiv.innerText += ` PH Loading @ 100%: ......................................................................................\n`;
+        unitDiv.innerText += `${Math.round(
+            hours
+        )}: .................................................................................................................\n`;
+        rateDiv.innerText += `${payRate * 1}...................................................................................................\n`;
+        amountDiv.innerText += `${rounded(
+            hours * payRate * 1
+        )}\n`;
+
+        return parseFloat(rounded(hours * payRate * 1));
+    }
+
+    //add one for if it does finish next day and the previous day is a PH or the next day is a PH
+}
+    
+function PublicHoliday(rowObj, payRate){
+    //check if its accrued or not
+    if(!rowObj.PH){
+        return 0;
+    }
+
+    if(!rowObj.accruePH){
+        payDiv.innerText += `Public Holiday Paid: ......................................................................................\n`;
+        unitDiv.innerText += `8: .........................................................................................................................................\n`;
+        rateDiv.innerText += `${payRate}...................................................................................................\n`;
+        amountDiv.innerText += `${rounded(8 * payRate)}\n`;
+
+        return parseFloat(rounded(8 * payRate));
+    }
+
+    if(rowObj.PH && rowObj.accruePH){
+        payDiv.innerText += ` Public Holiday Accrued  \n`;
+        unitDiv.innerText += `8\n`;
+        rateDiv.innerText += `\n`;
+        amountDiv.innerText += `\n`;
+
+        return 0;
+    }
+}
+
+function SickDay(rowObj, payRate){
+    if(!rowObj.sick){
+        return 0;
+    }
+
+    payDiv.innerText += `Sick: ..............................................................................................................................................\n`;
+    unitDiv.innerText += `${8}: .........................................................................................................................................\n`;
+    rateDiv.innerText += `${payRate}...................................................................................................\n`;
+    amountDiv.innerText += `${rounded(8 * payRate)}\n`;
+
+    return parseFloat(rounded(8 * payRate));
+}
+
+function AdoAdjustment(longFortnight, payRate){
+if (longFortnight) {
+    payDiv.innerText += ` \nADO Adjustment: .............................................................................................................................................\n`;
+    unitDiv.innerText += ` \n-4: ....................................................................................................................................................................\n`;
+    rateDiv.innerText += `\n${payRate}...................................................................................................\n`;
+    amountDiv.innerText += ` \n${rounded(4 * payRate * -1)}\n`;
+    return parseFloat(rounded(4 * payRate * -1));
+  } else {
+    payDiv.innerText += ` \nADO Adjustment: ...............................................................................................................................\n`;
+    unitDiv.innerText += ` \n4: ......................................................................................................................................................\n`;
+    rateDiv.innerText += `\n${payRate}...................................................................................................\n`;
+    amountDiv.innerText += ` \n${rounded(4 * payRate)}\n`;
+    return parseFloat(rounded(4 * payRate));
+  }
+}
+
+/***********************************
+ * 
+ * CHECK IF CALLOUT IS FOR 8 HOURS OR ENTIRE SHIFT
+ * 
+********************************* */
+
+function CallOut(rowObj, payRate){
+    if(!rowObj.callout){
+        return 0;
+    }
+
+    let hours = rowObj.timeWorkedInUnits;
+    if (hours > 8) {
+        hours = 8;
+      }
+  
+      payDiv.innerText += ` Callout @ 25%: ............................................................................................ \n`;
+      unitDiv.innerText += ` ${hours}: .............................................................................................................................\n`;
+      rateDiv.innerText += `${payRate * 0.25}...................................................................................................\n`;
+      amountDiv.innerText += `${rounded(hours * payRate * 0.25)} \n`;
+
+      return parseFloat(rounded(hours * payRate * 0.25));
+
+}
+
+function Wobod(rowObj, payRate){
+    if(!rowObj.OT){
+        return 0;
+    }
+
+    let hours = rowObj.timeWorkedInUnits;
+    //check if theres callout, if so, wobod = 23% of pay
+    //otherwise wobod = 48% of the days pay
+    //sick days cancel out wobods
+    if (!rowObj.callout) {
+        payDiv.innerText += `\nNEXT FORTNIGHT WOBOD PAYMENT: ...............................................................................................................................\n`;
+        unitDiv.innerText += ` \n@${hours}......................................................................................................................................................\n`;
+        rateDiv.innerText += `\n48%...................................................................................................\n`;
+        amountDiv.innerText += ` \n${rounded(
+            hours * payRate * 0.48
+        )}\n`;
+      }
+    if(rowObj.callout){
+        payDiv.innerText += `\nNEXT FORTNIGHT WOBOD PAYMENT: ...............................................................................................................................\n`;
+        unitDiv.innerText += ` \n@${hours}......................................................................................................................................................\n`;
+        rateDiv.innerText += `\n23%...................................................................................................\n`;
+        amountDiv.innerText += ` \n${rounded(
+          hours * payRate * 0.23
+        )}\n`;
+      }
+}
+
+function GuaranteePayment(payObj) {
+    if (payObj.ordinaryUnits >= 76 - payObj.timeLost) {
+      return 0;
+    }
+
+      let shortFall = rounded(76 - payObj.timeLost - payObj.ordinaryUnits);
+
+      payDiv.innerText += ` \nGuarantee: ...............................................................................................................................\n`;
+      unitDiv.innerText += ` \n${shortFall}: ......................................................................................................................................................\n`;
+      rateDiv.innerText += `\n${payObj.payrate}...................................................................................................\n`;
+      amountDiv.innerText += ` \n${rounded(shortFall * payObj.payrate)}\n`;
+
+      return parseFloat(rounded(shortFall * payObj.payrate));
+    
+  }
+
+function changeToMinutes(time){
+    if(time.trim() == ""){
+        throw error(
+            'need a time to change to units'
+        );
+    }
+
+    let minutesTime = time.match(/.{2}/g);
+    let mlHr = parseInt(minutesTime[0]) * 60;
+    let mlMin = parseInt(minutesTime[1]);
+
+    return mlHr + mlMin;
+}
+    
+function changeToUnits(time){
+    if(time.trim() == ""){
+        throw error(
+            'need a time to change to units'
+        );
+    }
+
+    let minutesTime = time.match(/.{2}/g);
+    let timeInMinutes =
+    parseInt(minutesTime[0]) * 60 + parseInt(minutesTime[1]);
+    timeInUnits = rounded(timeInMinutes / 60);
+    return timeInUnits;
+}
+
+function rounded(numberData) {
+    if(numberData == isNaN){
+        throw error(
+            'need a number to round'
+        );
+    }
+
+    return (Math.round((numberData) * 100) / 100).toFixed(2);
 }
 
 //converts minutes to units
-function AsUnits(minutes) {
-  return Math.round((minutes / 60 + Number.EPSILON) * 100) / 100;
+function minutesAsUnits(minutes) {
+return Math.round((minutes / 60) * 100) / 100;
 }
 
 //converts units to minutes
-function UnitsAsMinutes(units) {
-  return Math.round(units * 60);
+function unitsAsMinutes(units) {
+return Math.round(units * 60);
 }
 
 //rounds to integer?
-function RoundedUnits(minutes) {
-  return Math.round(minutes / 60);
+function roundedUnits(minutes) {
+return Math.round(minutes / 60);
 }
 
-calculateTimeWorkedAsUnits = (tableArray) => {
-  const timeAsUnits = [];
-  //format of timeWorked = Rostered hours, actual hours, lift up [IF ANY, else 0], layback [IF ANY, else 0], buildup [IF ANY, else 0]
-  var rowTime = [];
-  var startTimeInUnits = 0;
-  var startTimeRosteredInUnits = 0;
-  var finishTimeInUnits = 0;
-  var finishTimeRosteredInUnits = 0;
-  var milageTimeInUnits = 0;
-  var finishNextDay = false;
-  var liftUpExists = false;
-  var layBackExists = false;
-  var workedUnits = 0;
-  var workedUnitsRostered = 0;
-  var LB = 0;
-  const weekdays = [
-    `Sunday`,
-    `Monday`,
-    `Tuesday`,
-    `Wednesday`,
-    `Thursday`,
-    `Friday`,
-    `Saturday`,
-    `Sunday`,
-    `Monday`,
-    `Tuesday`,
-    `Wednesday`,
-    `Thursday`,
-    `Friday`,
-    `Saturday`,
-    `Sunday`,
-  ];
-  tableArray.forEach((row, index) => {
-    //if day is empty, day off or HOL
-    if (row[0] === "" || row[0].toUpperCase() === "HOL") {
-      //check for HOL
-      if (row[1].toUpperCase() === "HOL" || row[0].toUpperCase() === "HOL") {
-        timeAsUnits.push("Hol");
-      } else {
-        timeAsUnits.push(rowTime);
-      }
-    }
-    //normal days
-    else {
-      const x = [];
+function DisplayBreakdown(tableObj){
+    const payTableRows = document.querySelectorAll(".dataRow"); //get all the rows to show data
+    // console.log(tableObj);
 
-      //start time rostered as units
-      let startTimeRostered = row[0].match(/.{2}/g);
-      let startTimeRosteredInMinutes =
-        parseInt(startTimeRostered[0]) * 60 + parseInt(startTimeRostered[1]);
-      startTimeRosteredInUnits = rounded(startTimeRosteredInMinutes / 60);
-      x.push(startTimeRosteredInUnits);
+    for (let i = 0; i < payTableRows.length; i++) {
+        const rowCells = payTableRows[i].querySelectorAll("td"); 
 
-      if (row[1].toUpperCase() === "SICK") {
-        x.push("Sick");
-      } else {
-        //start time actual as units
-        let startTime = row[1].match(/.{2}/g);
-        let startTimeInMinutes =
-          parseInt(startTime[0]) * 60 + parseInt(startTime[1]);
-        startTimeInUnits = rounded(startTimeInMinutes / 60);
-        x.push(startTimeInUnits);
-      }
-
-      // finish time rostered as units
-      let finishTimeRostered = row[2].match(/.{2}/g);
-      let finishTimeRosteredInMinutes =
-        parseInt(finishTimeRostered[0]) * 60 + parseInt(finishTimeRostered[1]);
-      finishTimeRosteredInUnits = rounded(finishTimeRosteredInMinutes / 60);
-      x.push(finishTimeRosteredInUnits);
-
-      //finish time actual as units
-      //if the day is not a sick day
-      if (row[3] !== null && row[1].toUpperCase() !== "SICK") {
-        let finishTime = row[3].match(/.{2}/g);
-        let finishTimeInMinutes =
-          parseInt(finishTime[0]) * 60 + parseInt(finishTime[1]);
-        finishTimeInUnits = rounded(finishTimeInMinutes / 60);
-        x.push(finishTimeInUnits);
-      } else {
-        x.push("Sick");
-      }
-
-      //if the day is a sick day - calculate time lost
-      
-      if (row[1].toUpperCase() === "SICK") {
-        //if finish time is less than start time
-        //that means its a late shift that finishes the next morning
-        //add 24 to the finish time and do the normal calculation of finish time - start time
-        if (finishTimeRosteredInUnits < startTimeRosteredInUnits) {
-          workedUnits = rounded(
-            startTimeRosteredInUnits - (finishTimeRosteredInUnits + 24)
-          );
-          x.push(workedUnits);
-        } else {
-          //else just do the normal calculation of finish time- start time
-          workedUnits = rounded(
-            finishTimeRosteredInUnits - startTimeRosteredInUnits
-          );
-          x.push(workedUnits);
+        if(tableObj[i].RDO == true) { //if the day is an RDO, show its an rdo and skip row
+            rowCells[1].innerHTML = "RDO";    
+            continue;
         }
-      } else {
-        //not sick, so calculate normal working hours
-
-        //ACTUAL TIME WORKED as units
-        //if finish time is less than start time
-        //that means its a late shift that finishes the next morning
-        //add 24 to the finish time and do the normal calculation of finish time - start time
-        if (finishTimeInUnits < startTimeInUnits) {
-          workedUnits = Math.abs(
-            rounded(startTimeInUnits - (finishTimeInUnits + 24))
-          );
-          x.push(workedUnits);
-          finishNextDay = true;
-        } else {
-          workedUnits = Math.abs(rounded(finishTimeInUnits - startTimeInUnits));
-          x.push(workedUnits);
-        }
-
-        // WORK TIME ON START DAY
-        if (finishTimeInUnits < startTimeInUnits) {
-          x.push([workedUnits - finishTimeInUnits, weekdays[index]]);
-        } else {
-          x.push([workedUnits, weekdays[index]]);
-        }
-
-        // WORK TIME ON FINISH DAY
-        //if finish time is less than start time
-        //that means its a late shift that finishes the next morning
-        //check that it isnt midnight exactly
-        if (finishTimeRosteredInUnits < startTimeRosteredInUnits) {
-          let result = Math.abs(startTimeInUnits + workedUnits - 24);
-          if (result != 0) {
-            x.push([result, weekdays[index + 1]]);
-          } else {
-            x.push([0, weekdays[index]]);
-          }
-        } else {
-          x.push([0, weekdays[index]]);
-        }
-
-        if (finishTimeRosteredInUnits < startTimeRosteredInUnits) {
-          workedUnitsRostered = Math.abs(
-            rounded(startTimeRosteredInUnits - (finishTimeRosteredInUnits + 24))
-          );
-          finishNextDay = true;
-        } else {
-          workedUnitsRostered = rounded(
-            finishTimeRosteredInUnits - startTimeRosteredInUnits
-          );
-        }
-
-        //LU
-        // start time is before rostered, finish time is before rostered
-        if (
-          startTimeInUnits < startTimeRosteredInUnits
-        ) {
-          // finish time is before rostered finish time and rostered finish time is < midnight
-          if (finishTimeInUnits < finishTimeRosteredInUnits) {
-            x.push(
-              rounded(Math.abs(finishTimeRosteredInUnits - finishTimeInUnits))
-            );
-            liftUpExists = true;
-          }
-          else if ( //i.e 2330 actual vs 0030 rostered
-            finishTimeInUnits > finishTimeRosteredInUnits &&
-            finishTimeRosteredInUnits < startTimeRosteredInUnits
-          ) {
-            // if finish time is greater than rostered finish time means it finished same day but rostered finish next day
-            // add 24 to finishTimeRosteredInUnits
-            x.push(
-              rounded(
-                Math.abs(finishTimeRosteredInUnits + 24 - finishTimeInUnits)
-              )
-            );
-            liftUpExists = true;
-          }
-          else {
-            x.push(`no lift up`);
-          }
-        } else { 
-          x.push(`no lift up`);
+        if(tableObj[i].sick == true) { //if the day is a sick day, show its sick and skip row
+            rowCells[1].innerHTML = tableObj[i]['rosteredStart'];
+            rowCells[2].innerHTML = "SICK";
+            rowCells[3].innerHTML = tableObj[i]['rosteredFinish'];
+            continue;
         }
         
-        //LB
-        if ( // if actual start time > rostered start time && actual finish time > rostered finish time eg. 
-          startTimeInUnits > startTimeRosteredInUnits && finishTimeInUnits > finishTimeRosteredInUnits ||
-          // if actual start time > rostered start time && finishes next day && layback + workedUnits + actual start time > workedUnitsRostered + rostered start time
-          // 1545 | 1713 (1'28") till 2350 | 0138 (8'05" |8'25")
-          startTimeInUnits > startTimeRosteredInUnits && finishNextDay && ((workedUnits + startTimeInUnits) > (workedUnitsRostered + startTimeRosteredInUnits))
-        ) {
-          x.push(rounded(startTimeInUnits - startTimeRosteredInUnits));
-          layBackExists = true;
-          LB = (rounded(startTimeInUnits - startTimeRosteredInUnits));
-        } else {
-          x.push(`no layback`);
-        }
-
-        // =====================  BU  ======================== //
-        let bu = 0;
-        //if start time actual >= start time rostered
-        if(startTimeInUnits == startTimeRosteredInUnits){
-          if((startTimeInUnits + workedUnits) < (startTimeRosteredInUnits + workedUnitsRostered)){
-            bu = rounded((startTimeRosteredInUnits + workedUnitsRostered) - (startTimeInUnits + workedUnits));
-            x.push(bu);
-          }
-          else {
-            x.push(`no buildup`);
-          }
-        }
-        else if(startTimeInUnits > startTimeRosteredInUnits){
-          if((startTimeInUnits + workedUnits) == (startTimeRosteredInUnits + workedUnitsRostered)){
-            bu = rounded(startTimeInUnits - startTimeRosteredInUnits);
-            x.push(bu);
-          }
-          //if startTime + workedUnits < start time rostered + work time rostered
-          else if((startTimeInUnits + workedUnits) < (startTimeRosteredInUnits + workedUnitsRostered)){
-            bu = rounded((startTimeInUnits - startTimeRosteredInUnits) + ((startTimeRosteredInUnits + workedUnitsRostered) - (startTimeInUnits + workedUnits)));
-            x.push(bu);
-          }
-          else {
-            x.push(`no buildup`);
-          }
-        }
-        else{
-          x.push(`no buildup`);
-        }
-
-        // //if actual work time < rostered work time then there is build up
-        // if (workedUnits < workedUnitsRostered) {
-        //   //if !( actual start time < rostered start time ) i.e actual start time is equal or later than rostered start time, so same or lay back
-        //   if(!LiftUpExists || !(startTimeInUnits < startTimeRosteredInUnits))
-        //   {
-        //     bu = rounded( workedUnits - workedUnitsRostered );
-        //     x.push(bu);
-        //   }
-        //   else {
-        //     x.push(`no buildup`);
-        //   }
-        //   // //if start time > rostered ie.layback
-        //   // if (startTimeInUnits > startTimeRosteredInUnits) {
-        //   //   //if finish time <= rostered eg 2200 - 2130 & 0200 0130 i.e. if shift is shorter than rostered
-        //   //   if (finishTimeInUnits <= finishTimeRosteredInUnits) {
-        //   //     bu = rounded(
-        //   //       startTimeInUnits -
-        //   //         startTimeRosteredInUnits +
-        //   //         (finishTimeRosteredInUnits - finishTimeInUnits)
-        //   //     );
-        //   //     x.push(bu);
-        //   //     // console.log(index + " a");
-        //   //   }
-        //   //   //if finish time rostered < start time && finish time > rostered finish eg . 0000 2330
-        //   //   else if (
-        //   //     finishTimeRosteredInUnits < startTimeRosteredInUnits &&
-        //   //     finishTimeInUnits > finishTimeRosteredInUnits
-        //   //   ) {
-        //   //     bu = rounded(
-        //   //       startTimeInUnits -
-        //   //         startTimeRosteredInUnits +
-        //   //         (finishTimeRosteredInUnits + 24 - finishTimeInUnits)
-        //   //     );
-        //   //     x.push(bu);
-        //   //     // console.log(index + " b");
-        //   //   }
-        //   //   //if finish time is 
-        //   //   else {
-        //   //     bu = rounded( workedUnitsRostered - workedUnits );
-        //   //     x.push(bu);
-        //   //   }
-        //   // }
-        //   // //if start time = rostered
-        //   // else if (startTimeInUnits === startTimeRosteredInUnits) {
-        //   //   //if finish time < rostered eg 2200 - 2130 & 0200 0130
-        //   //   if (finishTimeInUnits < finishTimeRosteredInUnits) {
-        //   //     bu = rounded(finishTimeRosteredInUnits - finishTimeInUnits);
-        //   //     x.push(bu);
-        //   //     // console.log(index + " c");
-        //   //   }
-        //   //   //if finish time rostered < start time && finish time < rostered finish eg . 0000 2330
-        //   //   else if (
-        //   //     finishTimeRosteredInUnits < startTimeInUnits &&
-        //   //     finishTimeInUnits > finishTimeRosteredInUnits
-        //   //   ) {
-        //   //     bu = rounded(finishTimeRosteredInUnits + 24 - finishTimeInUnits);
-        //   //     x.push(bu);
-        //   //     // console.log(index + " d");
-        //   //   }
-        //   // } else {
-        //   //   x.push(`no buildup`);
-        //   // }
-        // } else {
-        //   x.push(`no buildup`);
-        // }
-
-        // CALCULATE MILAGE
-        if (row[6] !== "") {
-          let milageArray = [];
-          let milageTime = row[6].match(/.{2}/g);
-          let milageTimeInMinutes =
-            parseInt(milageTime[0]) * 60 + parseInt(milageTime[1]);
-          milageTimeInUnits = rounded(milageTimeInMinutes / 60);
-          milageArray.push(milageTimeInUnits);
-          //if 209kms passed before 8 hours
-          if (milageTimeInUnits - startTimeInUnits < 8) {
-            //calculate the buildup
-            let timeWorkedBeforeMilage = rounded(
-              milageTimeInUnits - startTimeInUnits
-            );
-            if (timeWorkedBeforeMilage < 0) {
-              timeWorkedBeforeMilage += 24;
-            }
-            let milageBU = 8 - timeWorkedBeforeMilage;
-            milageArray.push(timeWorkedBeforeMilage);
-            milageArray.push(milageBU);
-            //calculate the OT
-            let milageOT = rounded(workedUnits - timeWorkedBeforeMilage);
-            milageArray.push(milageOT);
-          } else {
-            let timeWorkedBeforeMilage = rounded(
-              milageTimeInUnits - startTimeInUnits
-            );
-            milageArray.push(timeWorkedBeforeMilage);
-            milageArray.push("209kms passed after 8 hours");
-          }
-          x.push(milageArray);
-        } else {
-          x.push("No milage");
-        }
-      }
-
-      timeAsUnits.push(x);
+        rowCells[1].innerHTML = tableObj[i]['rosteredStart'];
+        rowCells[2].innerHTML = tableObj[i]['actualStart'];
+        rowCells[3].innerHTML = tableObj[i]['rosteredFinish'];
+        rowCells[4].innerHTML = tableObj[i]['actualFinish'];
+        rowCells[5].innerHTML = tableObj[i]['timeWorked'] + ' / ' + tableObj[i]['timeWorkedInUnits'];
+        rowCells[6].innerHTML = tableObj[i]['liftupAsUnits'] ? tableObj[i]['liftupAsUnits'] : '';
+        rowCells[7].innerHTML = tableObj[i]['laybackAsUnits'] ? tableObj[i]['laybackAsUnits']: '';
+        rowCells[8].innerHTML = tableObj[i]['buildupAsUnits'] ? tableObj[i]['buildupAsUnits'] : '';
+        rowCells[9].innerHTML = tableObj[i]['milage'] ? tableObj[i]['milage'] : '';
+        rowCells[10].innerHTML = tableObj[i]['extraKM'] ? tableObj[i]['extraKM'] : '';
+        rowCells[11].innerHTML = tableObj[i]['PH'] ? tableObj[i]['PH'] : '';
+        rowCells[12].innerHTML = tableObj[i]['accruePH'] ? tableObj[i]['accruePH'] : '';
+        rowCells[13].innerHTML = tableObj[i]['OT'] ? tableObj[i]['OT'] : '';
+        rowCells[14].innerHTML = tableObj[i]['callout'] ? tableObj[i]['callout'] : '';
+        rowCells[15].innerHTML = tableObj[i]['totalWorked'];
     }
-  });
-
-  return timeAsUnits;
-};
-
-//pay
-// function pay(hours, day, daysWorked) {
-//   if (daysWorked <= ordinaryDays) {
-//     if (hours < 8) {
-//       //hours * payRate
-//     }
-//     if (hours > 8) {
-//       // 8 * payRate
-//       if (day !== "Saturday" && day !== "Sunday" && !publicHoliday) {
-//         //hours - 8 * payRate * 1.5
-//       }
-//       if (day === "Saturday" || day === "Sunday" || publicHoliday) {
-//         //hours - 8 * payRate * 2
-//       }
-//     }
-//   }
-//   if (daysWorked > ordinaryDays) {
-//     if (daysWorked <= ordinaryDays + 2) {
-//       if (hours <= 11) {
-//         //hours * payRate * 1.5
-//       }
-//       if (hours > 11) {
-//         //8 * payRate * 1.5
-//         //hours - 8 * payRate * 2
-//       }
-//     }
-//     if (daysWorked >= ordinaryDays + 3) {
-//       //hours * payRate * 2
-//     }
-//   }
-// }
-
-// function weekDayAllowances(hours, day, startTime, finishTime, daysWorked) {
-//   if (day !== "Sunday" && day !== "Saturday") {
-//     if (!publicHoliday && !callOut) {
-//       MorningPenalty(hours, startTime);
-//       AfternoonPenalty(hours, startTime, finishTime);
-//       NightPenalty(hours, startTime, finishTime);
-//       SpecialLoadingPenalty(startTime, finishTime);
-//     }
-//     if (callOut) {
-//       CallOut(hours, day);
-//     }
-//   }
-//   if (day === "Saturday") {
-//     //sat loading 50%
-//   }
-//   if (day === "Sunday") {
-//     //sun loading 100%
-//   }
-//   if (publicHoliday) {
-//     //50% weekday and saturday
-//     //100% sunday
-//   }
-// }
-// //weekday shift allowances
-// function MorningPenalty(hours, startTime) {
-//   if (Math.round(hours) >= 8) {
-//     hours = 8;
-//   }
-//   if (startTime >= 4 && startTime <= 5.5) {
-//     dailyPayArray.push(Math.round(hours) * EarlyMorningShiftPenalty);
-//     payDiv.innerText += ` Morning Shift Dvrs/Grds Hrl: ......................................................................................\n`;
-//     unitDiv.innerText += `${Math.round(
-//       hours
-//     )}: .................................................................................................................\n`;
-//     amountDiv.innerText += `${Math.round(hours) * EarlyMorningShiftPenalty}\n`;
-//   }
-// }
-
-// function AfternoonPenalty(hours, startTime, finishTime) {
-//   if (Math.round(hours) >= 8) {
-//     hours = 8;
-//   }
-//   if (startTime < 18 && finishTime > 18) {
-//     dailyPayArray.push(Math.round(hours) * AfternoonShiftPenalty);
-//     payDiv.innerText += `Afternoon Shift Dvrs/Grds Hrl: ......................................................................................\n`;
-//     unitDiv.innerText += `${Math.round(
-//       hours
-//     )}: .................................................................................................................\n`;
-//     amountDiv.innerText += `${Math.round(hours) * AfternoonShiftPenalty}\n`;
-//   }
-// }
-
-// function NightPenalty(hours, startTime) {
-//   if (Math.round(hours) >= 8) {
-//     hours = 8;
-//   }
-//   if (startTime <= 3.98 || startTime >= 18) {
-//       dailyPayArray.push(Math.round(hours) * nightShiftPenalty);
-//       payDiv.innerText += `Night Shift Dvrs/Grds Hrl: ......................................................................................\n`;
-//       unitDiv.innerText += `${Math.round(
-//         hours
-//       )}: .................................................................................................................\n`;
-//       amountDiv.innerText += `${Math.round(hours) * nightShiftPenalty}\n`;
-// }
-
-// function SpecialLoadingPenalty(startTime, finishTime) {
-//   if (
-//     (startTime >= 1.02 && startTime <= 3.98) ||
-//     (finishTime >= 1.02 && finishTime <= 3.98)
-//   ) {
-//     dailyPayArray.push(specialLoading);
-//     payDiv.innerText += `Special Loading Drvs/Grds: ......................................................................................\n`;
-//     unitDiv.innerText += `1: .............................................................................................................\n`;
-//     amountDiv.innerText += `${specialLoading}\n`;
-//   }
-// }
-// //weekend loadings
-// //public holiday loading
-// //call out penalty
-// function CallOut(hours, day) {
-//   if (hours > 8) {
-//     hours = 8;
-//   }
-//   if (callOut && day !== "Saturday" && day !== "Sunday") {
-//     dailyPayArray.push(rounded(hours * payRate * callOutPenalty));
-//     payDiv.innerText += ` Callout @ 25%: ............................................................................................ \n`;
-//     unitDiv.innerText += ` ${hours}: .............................................................................................................................\n`;
-//     amountDiv.innerText += `${rounded(hours * payRate * callOutPenalty)} \n`;
-//   }
-// }
-//cab
-//security
-
-// //weekday pay
-// function weekdayPay(hours,accruePh, payPh,callOut) {
-//   if (accruePh || payPh) {
-//     publicHoliday = true;
-//   } else {
-//     publicHoliday = false;
-//   }
-//   //ph
-//   if(publicHoliday){
-//     //ordinary 100%
-//     //hours * payRate
-//     //loading @ 50%
-//     //hours * payRate * 0.5
-//     //no shift penalties
-//   }
-//   //non ph
-//   if(!publicHoliday){
-//     //ordinary 100%
-//     //hours * payRate
-//     //shift penalties
-//     //hours * penaltyRate
-//     //special loading
-//     //1 * specialLoading
-//   }
-//   //overtime
-//   if(hours > 8){
-//     //150%
-//     //(hours - 8) * payRate * 1.5
-//   }
-//   //callout
-//   if(callOut){
-//     //125% upto 8 hours
-//     //hours * payRate
-//     //no shift penalties or spc loading
-//   }
-// }
-// //saturday pay
-// if (accruePh || payPh) {
-//   publicHoliday = true;
-// } else {
-//   publicHoliday = false;
-// }
-//     //ph
-//       //ordinary 100%
-//       //PH loading @ 50%
-//       //sat loading @ 50%
-//     //non ph
-//       //ordinary 100%
-//       //sat loading @ 50%
-//     // OT
-//       //200%
-// //sunday pay
-// if (accruePh || payPh) {
-//   publicHoliday = true;
-// } else {
-//   publicHoliday = false;
-// }
-//     //ph
-//       //ordinary 100%
-//       //PH loading @ 100%
-//     //non ph
-//       //ordinary 100%
-//       //sun loading @ 100%
-//     // OT
-//       //200%
-// //excess shifts
-// if (accruePh || payPh) {
-//   publicHoliday = true;
-// } else {
-//   publicHoliday = false;
-// }
-//     //day 1 + 2
-//       //weekday
-//         //150% up to 11 hours
-//         //200% over 11 hours
-//       //weekday PH
-//         //150% normal
-//         //50% PH loading
-//       //weekend
-//         //200%
-//     //day 3 +
-//       //200%
+}

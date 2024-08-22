@@ -228,15 +228,3 @@ background-color: #f2f2f2c0;
   height: 20px;
   white-space:nowrap;
 }
-
-td {
-  padding: 0.5rem;
-}
-
-.dataRow:nth-child(even) {
-  background-color: #f2f2f2;
-}
-
-.dataRow:hover {
-  background-color: #ddd;
-}
