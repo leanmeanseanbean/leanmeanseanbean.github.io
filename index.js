@@ -335,15 +335,6 @@ function convertInputs(tableObj) {
         //ONLY NEED TO SPLIT IT UP IF THE FOLLOWING DAY IS A PUBLIC HOLIDAY OR A SAT OR SUNDAY
         let objA = {};
         let objB = {};
-        // if(isLaidBack){
-        //     objA.layback = rowObj.laybackAsUnits;
-        // }
-        // if(isLiftedUp){
-        //     objB.liftup = rowObj.liftUpAsUnits;
-        // }
-        // if(hasBuildUp){
-        //     objB.buildup = rowObj.buildupAsUnits;
-        // }
 
         //if shift should finish next day but doesnt
         //either because of lift up or build up
@@ -391,7 +382,7 @@ function convertInputs(tableObj) {
         //if shift does finish next day
         if (rowObj.finishesNextDay) {
           let nextDayPortion =
-            parseFloat(changeToUnits(rowObj.actualFinish)) + liftup + buildup;
+            parseFloat(changeToUnits(rowObj.actualFinish)) + liftup + buildup + parseFloat(rowObj.extraKMAsUnits);
           let previousDayPortion = rowObj.totalWorked - nextDayPortion;
           let normalPortion = previousDayPortion - layback; //time worked without layback
           let overtimePortion = 0.0;
@@ -415,11 +406,12 @@ function convertInputs(tableObj) {
             objB.overtimeUnits = 0.0;
           }
           if (rowObj.totalWorked > 8.0) {
-            // console.log(i + ' : here i am')
-            // console.log(nextDayPortion)
-            // console.log(previousDayPortion)
-            // console.log(normalPortion)
+            console.log(i + ' : here i am')
+            console.log(nextDayPortion)
+            console.log(previousDayPortion)
+            console.log(normalPortion)
             if (previousDayPortion >= 8) {
+              console.log('more')
               normalPortion = 8.0;
               overtimePortion = previousDayPortion - 8.0;
               //totalUnits
@@ -428,7 +420,7 @@ function convertInputs(tableObj) {
               //workedUnits
               objA.workedUnits = normalPortion - layback;
               // objB.workedUnits = rowObj.timeWorkedInUnits - normalPortion < 0 ? 0 : rowObj.timeWorkedInUnits - normalPortion;
-              objB.workedUnits = nextDayPortion - liftup - buildup;
+              objB.workedUnits = nextDayPortion - liftup - buildup - parseFloat(rowObj.extraKMAsUnits);
               //normalPayUnits
               objA.normalPayUnits = normalPortion;
               objB.normalPayUnits = 0.0;
@@ -452,6 +444,7 @@ function convertInputs(tableObj) {
               // }
             }
             if (previousDayPortion < 8) {
+              console.log('less')
               //overtime only on the 2nd day
               //totalUnits - all payable units
               objA.totalUnits = previousDayPortion;
@@ -461,7 +454,7 @@ function convertInputs(tableObj) {
               objB.workedUnits = rowObj.timeWorkedInUnits - normalPortion;
               //normalWorkedUnits - actual work done
               objA.normalWorkedUnits = normalPortion;
-              objB.normalWorkedUnits = nextDayPortion - liftup - buildup;
+              objB.normalWorkedUnits = nextDayPortion - liftup - buildup - parseFloat(rowObj.ExtraKMAsUnits);
               //normalPayUnits - pay @ normal rate
               objA.normalPayUnits = previousDayPortion;
               objB.normalPayUnits = 8 - previousDayPortion;
@@ -527,13 +520,13 @@ function CalculatePay(payObj) {
     // console.log(payObj[i].day);
     //display if its a day off
     if (!!payObj[i].RDO) {
-      payDiv.innerText += ` \n${payObj[i].day}:  DAY OFF\n`;
+      payDiv.innerText += ` \n${payObj[i].day.toUpperCase()}:  DAY OFF\n`;
       unitDiv.innerText += ` \n\n`;
       rateDiv.innerText += `\n\n`;
       amountDiv.innerText += ` \n\n`;
     } else {
       //display the day
-      payDiv.innerText += ` \n${payObj[i].day}: \n`;
+      payDiv.innerText += ` \n${payObj[i].day.toUpperCase()}: \n`;
       unitDiv.innerText += ` \n\n`;
       rateDiv.innerText += `\n\n`;
       amountDiv.innerText += ` \n\n`;
@@ -697,6 +690,10 @@ function NormalPay(rowObj, payRate) {
   if (nextDayDetails !== undefined) {
     // console.log('ndd = ' + nextDayDetails.normalPayUnits);
     hours = dayDetails.normalPayUnits + nextDayDetails.normalPayUnits;
+  }
+
+  if(!(hours > 0.00)){
+    return 0;
   }
 
   if (!rowObj.timeWorked) {
@@ -964,6 +961,10 @@ function MorningShiftPenalty(rowObj) {
     );
   }
 
+  if(!(hours > 0.00)){
+    return 0;
+  }
+
   if (hours > 8) {
     hours = 8.0;
   }
@@ -1007,6 +1008,10 @@ function AfternoonShiftPenalty(rowObj) {
   let nextDayHours = 0.0;
   if (nextDayDetails !== undefined) {
     nextDayHours = Math.round(parseFloat(nextDayDetails.workedUnits));
+  }
+
+  if(!(hours > 0.00) && !(nextDayHours > 0.00)){
+    return 0;
   }
 
   let combinedHours = nextDayHours + hours > 8 ? 8 : Math.round(nextDayHours + hours);
@@ -1105,6 +1110,10 @@ function NightShiftPenalty(rowObj) {
   let nextDayHours = 0.0;
   if (nextDayDetails !== undefined) {
     nextDayHours = Math.round(parseFloat(nextDayDetails.workedUnits));
+  }
+
+  if(!(hours > 0.00) && !(nextDayHours > 0.00)){
+    return 0;
   }
 
   if (hours > 8) {
@@ -1263,6 +1272,10 @@ function SaturdayLoading(rowObj, payRate) {
   }
   let combinedHours = hours + nextDayHours > 8 ? 8 : hours + nextDayHours;
 
+  if(!(hours > 0.00) && !(nextDayHours > 0.00)){
+    return 0;
+  }
+
   //if its an excess day, exit
   if (rowObj.excessDayNormal || rowObj.excessDayDouble) {
     return 0;
@@ -1321,6 +1334,10 @@ function SaturdayLoading(rowObj, payRate) {
   }
 
   if (rowObj.finishesNextDay && rowObj.day == "fri") {
+    if(!(nextDayHours > 0.00)){
+      return 0;
+    }
+    
     payDiv.innerText += ` Loading @ 50% Saturday: ......................................................................................\n`;
     unitDiv.innerText += `${rounded(
       nextDayHours
@@ -1343,11 +1360,15 @@ function SundayLoading(rowObj, payRate) {
   if (dayDetails !== undefined) {
     hours = parseFloat(dayDetails.normalPayUnits);
   }
-  let nextDayHours = 0.0;
+  let nextDayHours = 0.00;
   if (nextDayDetails !== undefined) {
     nextDayHours = parseFloat(nextDayDetails.normalPayUnits);
   }
   let combinedHours = hours + nextDayHours > 8 ? 8 : hours + nextDayHours;
+
+  if(!(hours > 0.00) && !(nextDayHours > 0.00)){
+    return 0;
+  }
 
   if (rowObj.excessDayNormal || rowObj.excessDayDouble) {
     return 0;
@@ -1384,6 +1405,11 @@ function SundayLoading(rowObj, payRate) {
   }
 
   if (rowObj.finishesNextDay && rowObj.day == "sat") {
+
+    if(!(nextDayHours > 0.00)){
+      return 0;
+    }
+
     payDiv.innerText += ` Loading @ 100% Sunday: ......................................................................................\n`;
     unitDiv.innerText += `${rounded(
       nextDayHours
