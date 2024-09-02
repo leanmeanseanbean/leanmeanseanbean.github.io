@@ -1706,7 +1706,7 @@ function GuaranteePayment(payObj) {
       continue;
     }
     //add in the timeWorked
-    let timeWorked = payObj[i].timeWorkedInUnits ? parseFloat(payObj[i].timeWorkedInUnits) : 0.00;
+    let timeWorked = payObj[i].totalWorked ? parseFloat(payObj[i].totalWorked) : 0.00;
     ordinaryUnits += timeWorked;
 
     //add 8 hours for a hol
@@ -1728,65 +1728,7 @@ function GuaranteePayment(payObj) {
       timeLost += sickUnits;
     }
 
-    //NEED TO ADD IN SATURDAY LOADING AND SUNDAY LOADING INTO THE GUARANTEES
-
-    let weekendLoading = 0.00;
-    //if day == "fri" && payObj[i].finishesNextDay
-    //50% of timeWorked on sat
-    if(payObj[i].day == 'fri' && payObj[i].finishesNextDay){
-      weekendLoading = payObj[i].satBreakdown.workedUnits * 0.5;
-      console.log(weekendLoading);
-      if(weekendLoading > 0){
-        ordinaryUnits += weekendLoading;
-      }
-    }
-
-    //if day == 'sat' && !payObj[i].finishesNextDay
-    //50% of timeWorked;
-    if(payObj[i].day == 'sat' && !payObj[i].finishesNextDay){
-      weekendLoading = payObj[i].satBreakdown.workedUnits * 0.5;
-      console.log(weekendLoading);
-      if(weekendLoading > 0){
-        ordinaryUnits += weekendLoading;
-      }
-    }
-
-    //if day == 'sat' && payObj[i].finishesNextDay
-    //50% of timeWorked on sat
-    //100% of timeWorked on sun
-    if(payObj[i].day == 'sat' && payObj[i].finishesNextDay){
-      weekendLoading = payObj[i].satBreakdown.workedUnits * 0.5;
-      console.log(weekendLoading);
-      if(weekendLoading > 0){
-        ordinaryUnits += weekendLoading;
-      }
-      
-      weekendLoading = payObj[i].sunBreakdown.workedUnits * 1;
-      console.log(weekendLoading);
-      if(weekendLoading > 0){
-        ordinaryUnits += weekendLoading;
-      }
-    }
-
-    //if day == "sun" && !payObj[i].finishesNextDay
-    //100% of timeWorked;
-    if(payObj[i].day == 'sun' && !payObj[i].finishesNextDay){
-      weekendLoading = payObj[i].sunBreakdown.workedUnits * 1;
-      console.log(weekendLoading);
-      if(weekendLoading > 0){
-        ordinaryUnits += weekendLoading;
-      }
-    }
-
-    //if day == "sun" && payObj[i].finishesNextDay
-    //100% of timeWorked on sunday;
-    if(payObj[i].day == 'sun' && payObj[i].finishesNextDay){
-      weekendLoading = payObj[i].sunBreakdown.workedUnits * 1;
-      console.log(weekendLoading);
-      if(weekendLoading > 0){
-        ordinaryUnits += weekendLoading;
-      }
-    }
+    
   }
 
   if(ordinaryUnits > minHours - timeLost){
