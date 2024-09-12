@@ -1371,6 +1371,14 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     amountDiv.innerText += `${rounded(milageBU * payRate)}   \n`;
   }
 
+  function MilagePayment(milageOTUnits) {
+    dailyPayArray.push(rounded(milageOTUnits * payRate * weekdayOT));
+    payDiv.innerText += ` Milage payment 209k's: ..................................................................................\n`;
+    unitDiv.innerText += ` ${rounded(milageOTUnits)}: ................................................................................................................................... \n`;
+    rateDiv.innerText += `${payRate * weekendOT}...................................................................................................\n`;
+    amountDiv.innerText += `${rounded(milageOTUnits * payRate * weekdayOT)}\n`;
+  }
+
   function ApplyCallOut(hours) {
     if (hours > shiftLength) {
       hours = shiftLength;
@@ -1383,13 +1391,7 @@ calculatePay = (payRate, adoWeek, tableArray, role) => {
     amountDiv.innerText += `${rounded(hours * payRate * callOutPenalty)} \n`;
   }
 
-  function MilagePayment(milageOTUnits) {
-    dailyPayArray.push(rounded(milageOTUnits * payRate * weekdayOT));
-    payDiv.innerText += ` Milage payment 209k's: ..................................................................................\n`;
-    unitDiv.innerText += ` ${rounded(milageOTUnits)}: ................................................................................................................................... \n`;
-    rateDiv.innerText += `${payRate * weekendOT}...................................................................................................\n`;
-    amountDiv.innerText += `${rounded(milageOTUnits * payRate * weekdayOT)}\n`;
-  }
+
 
   function DoubleOT(hours) {
     dailyPayArray.push(rounded(hours * payRate * weekendOT));
