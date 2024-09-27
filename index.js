@@ -693,9 +693,9 @@ function NormalPay(rowObj, payRate) {
     hours = dayDetails.normalPayUnits + nextDayDetails.normalPayUnits;
   }
 
-  if(!!rowObj.milage){
-    hours = parseFloat(rowObj.milageArray[1]);
-  }
+  // if(!!rowObj.milage){
+  //   hours = parseFloat(rowObj.milageArray[1]);
+  // }
 
   if(!(hours > 0.00)){
     return 0;
@@ -1801,17 +1801,28 @@ function GuaranteePayment(payObj) {
   let shortFall = 0.00;
   console.log(payObj);
 
-  for (let i = 0; i < shifts; i++) {
+  let counter = 0;
+
+  for (let i = 0; i < 14; i++) {
     if(payObj[i].RDO){
       continue;
     }
+
+    if(counter > shifts){
+      break;
+    }
+
     //add in the timeWorked
-    let timeWorked = payObj[i].totalWorked ? parseFloat(payObj[i].totalWorked) : 0.00;
+    let timeWorked = payObj[i].totalWorked && !payObj[i].hol ? parseFloat(payObj[i].totalWorked) : 0.00;
+    console.log(payObj[i].day + ' ' + ordinaryUnits);
     ordinaryUnits += timeWorked;
+    console.log(ordinaryUnits);
 
     //add 8 hours for a hol
     if(payObj[i].hol){
+      console.log('yep its a hol! ' + ordinaryUnits);
       ordinaryUnits += 8.00;
+      console.log(ordinaryUnits);
     }
 
     let sickUnits = 0.00;
@@ -1828,7 +1839,7 @@ function GuaranteePayment(payObj) {
       timeLost += sickUnits;
     }
 
-    
+    counter++;
   }
 
   if(ordinaryUnits > minHours - timeLost){
