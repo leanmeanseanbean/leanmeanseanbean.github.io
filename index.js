@@ -1805,7 +1805,6 @@ function GuaranteePayment(payObj) {
 
   for (let i = 0; i < 14; i++) {
     if(payObj[i].RDO){
-      counter += -1;
       continue;
     }
 
@@ -1841,6 +1840,7 @@ function GuaranteePayment(payObj) {
     }
 
     counter++;
+    console.log('counter = ' + counter);
   }
 
   if(ordinaryUnits > minHours - timeLost){
