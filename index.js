@@ -117,7 +117,7 @@ storeData = () => {
 };
 
 function convertInputs(tableObj) {
-  console.log(tableObj);
+  // console.log(tableObj);
   const payObj = {};
   payObj.longFortnight = tableObj.longFortnight;
   payObj.payrate = parseFloat(tableObj.payrate);
@@ -420,7 +420,7 @@ function convertInputs(tableObj) {
           }
           if (totalWorked > 8.0) {
             if (previousDayPortion >= 8) {
-              console.log('more')
+              // console.log('more')
               normalPortion = 8.0;
               overtimePortion = previousDayPortion - 8.0;
               //totalUnits
@@ -442,7 +442,7 @@ function convertInputs(tableObj) {
               objB.normalWorkedUnits = 0.0; //its all overtime so no expenses
             }
             if (previousDayPortion < 8) {
-              console.log('less')
+              // console.log('less')
               //overtime only on the 2nd day
               //totalUnits - all payable units
               objA.totalUnits = previousDayPortion;
@@ -498,7 +498,7 @@ function convertInputs(tableObj) {
 }
 
 function CalculatePay(payObj) {
-  // console.log(payObj);
+  console.log(payObj);
   //empty any existing text
   payDiv.innerText = "";
   unitDiv.innerText = ``;
@@ -518,10 +518,13 @@ function CalculatePay(payObj) {
     // console.log(payObj[i].day);
     //display if its a day off
     if (!!payObj[i].RDO) {
-      payDiv.innerText += ` \n${payObj[i].day.toUpperCase()}:  DAY OFF\n`;
-      unitDiv.innerText += ` \n\n`;
-      rateDiv.innerText += `\n\n`;
-      amountDiv.innerText += ` \n\n`;
+        payDiv.innerText += ` \n${payObj[i].day.toUpperCase()}:  DAY OFF\n`;
+        unitDiv.innerText += ` \n\n`;
+        rateDiv.innerText += `\n\n`;
+        amountDiv.innerText += ` \n\n`;
+        if(payObj[i].PH){
+          PublicHoliday(payObj[i], payObj.payrate)
+        }
     } else {
       //display the day
       payDiv.innerText += ` \n${payObj[i].day.toUpperCase()}: \n`;
@@ -1697,12 +1700,12 @@ function Wobod(payObj, payRate) {
   if(payObj.wobodArray.length <= 0){
     return false;
   }
-  console.log(payObj.sickyCounter)
-  console.log(payObj.wobodArray);
+  // console.log(payObj.sickyCounter)
+  // console.log(payObj.wobodArray);
   
   for (let i = payObj.sickyCounter; i < payObj.wobodArray.length; i++){
     let hours = payObj.wobodArray[i].timeWorkedInUnits;
-    console.log(hours);
+    // console.log(hours);
     //check if theres callout, if so, wobod = 23% of pay
     //otherwise wobod = 48% of the days pay
     //sick days cancel out wobods
@@ -1799,7 +1802,7 @@ function GuaranteePayment(payObj) {
   let ordinaryUnits = 0.00;
   let timeLost = 0.00;
   let shortFall = 0.00;
-  console.log(payObj);
+  // console.log(payObj);
 
   let counter = 0;
 
@@ -1814,15 +1817,15 @@ function GuaranteePayment(payObj) {
 
     //add in the timeWorked
     let timeWorked = payObj[i].totalWorked && !payObj[i].hol ? parseFloat(payObj[i].totalWorked) : 0.00;
-    console.log(payObj[i].day + ' ' + ordinaryUnits);
+    // console.log(payObj[i].day + ' ' + ordinaryUnits);
     ordinaryUnits += timeWorked;
-    console.log(ordinaryUnits);
+    // console.log(ordinaryUnits);
 
     //add 8 hours for a hol
     if(payObj[i].hol){
-      console.log('yep its a hol! ' + ordinaryUnits);
+      // console.log('yep its a hol! ' + ordinaryUnits);
       ordinaryUnits += 8.00;
-      console.log(ordinaryUnits);
+      // console.log(ordinaryUnits);
     }
 
     let sickUnits = 0.00;
@@ -1840,7 +1843,7 @@ function GuaranteePayment(payObj) {
     }
 
     counter++;
-    console.log('counter = ' + counter);
+    // console.log('counter = ' + counter);
   }
 
   if(ordinaryUnits > minHours - timeLost){
